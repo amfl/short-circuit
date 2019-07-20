@@ -1,5 +1,6 @@
 import logging
 import sys
+from tile.grid import Grid
 
 from blessed import Terminal
 from blessed.formatters import FormattingString
@@ -23,8 +24,9 @@ class TermUI:
         else:
             return {'no_op': True}
 
-    def __init__(self):
+    def __init__(self, grid: Grid):
         self.t = Terminal()
+        self.grid = grid
         self.cursor_pos = (0,0)
 
         logger.info("----------------------------------")
@@ -55,6 +57,13 @@ class TermUI:
 
 
     def render(self):
+        # Render the grid
+        print(self.t.move(0, 0), end='')
+        for y in range(len(self.grid.tiles)):
+            for x in range(len(self.grid.tiles[y])):
+                print('.', end='')
+            print()
+
         # Can change this to be smarter if we ever have a viewport
         print(self.t.move(self.cursor_pos[1], self.cursor_pos[0]), end='')
         sys.stdout.flush()

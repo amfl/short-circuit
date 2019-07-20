@@ -2,6 +2,7 @@ import logging
 
 from graph.proto import *
 from tile.tui import *
+from tile.grid import Grid
 
 
 logger = logging.getLogger()
@@ -16,8 +17,11 @@ def main():
     # Run the prototype code for graph representation
     proto()
 
+    # Create a grid
+    g = Grid()
+
     # Start up the UI
-    t = TermUI()
+    t = TermUI(g)
     # Block until we quit the UI
     t.start()
 
