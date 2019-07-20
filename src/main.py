@@ -1,7 +1,7 @@
 import logging
 
 from graph.proto import *
-from tile.gui import *
+from tile.tui import *
 
 
 logger = logging.getLogger()
@@ -16,8 +16,10 @@ def main():
     # Run the prototype code for graph representation
     proto()
 
-    # Start up the GUI
-    t = TermGUI()
+    # Start up the UI
+    t = TermUI()
+    # Block until we quit the UI
+    t.start()
 
 if __name__ == '__main__':
     main()
