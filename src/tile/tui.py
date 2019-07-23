@@ -1,6 +1,6 @@
 import logging
 import sys
-from tile.grid import Grid
+from tile.grid import Grid, Tile
 
 from blessed import Terminal
 from blessed.formatters import FormattingString
@@ -21,6 +21,10 @@ class TermUI:
             return {'move': (-1,0)}
         elif inp in 'dl':
             return {'move': (1,0)}
+        elif inp in ' n':
+            return {'toggle': {'direction': 1}}
+        elif inp == 'p':
+            return {'toggle': {'direction': -1}}
         else:
             return {'no_op': True}
 
@@ -28,6 +32,16 @@ class TermUI:
         self.t = Terminal()
         self.grid = grid
         self.cursor_pos = (0,0)
+
+        # Used for rendering tiles
+        self.glyphs = {
+            Tile.GROUND: '.',
+            Tile.WIRE: '+',
+            Tile.NAND_UP: '^',
+            Tile.NAND_DOWN: 'v',
+            Tile.NAND_LEFT: '<',
+            Tile.NAND_RIGHT: '>',
+        }
 
         logger.info("----------------------------------")
         logger.info("Terminal colors: %d", self.t.number_of_colors)
@@ -46,6 +60,8 @@ class TermUI:
             action = self.handle_inputs(inp)
 
             move = action.get('move')
+            toggle = action.get('toggle')
+
             if action.get('exit'):
                 break
             elif move:
@@ -54,14 +70,20 @@ class TermUI:
                     self.cursor_pos[1] + move[1],
                 )
                 logger.debug('Cursor pos: %s', self.cursor_pos)
-
+            elif toggle:
+                # Toggle between tile pieces
+                x, y = self.cursor_pos
+                current = self.grid.tiles[y][x]
+                self.grid.tiles[y][x] = Tile((current.value + toggle['direction']) % len(Tile))
 
     def render(self):
         # Render the grid
         print(self.t.move(0, 0), end='')
         for y in range(len(self.grid.tiles)):
             for x in range(len(self.grid.tiles[y])):
-                print('.', end='')
+                # Get the glyph which represents this tile
+                glyph = self.glyphs.get(self.grid.tiles[y][x], '?')
+                print(glyph, end='')
             print()
 
         # Can change this to be smarter if we ever have a viewport

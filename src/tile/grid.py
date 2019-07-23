@@ -1,9 +1,12 @@
 from enum import Enum, auto
 
 class Tile(Enum):
-    GROUND=auto()
+    GROUND=0
     WIRE=auto()
     NAND_UP=auto()
+    NAND_DOWN=auto()
+    NAND_LEFT=auto()
+    NAND_RIGHT=auto()
 
 class Grid:
     def __init__(self):
