@@ -7,7 +7,7 @@ class Tile(Enum):
 
 class Grid:
     def __init__(self):
-        self.tiles = [[Tile.GROUND] * 20]*20
+        self.tiles = [[Tile.GROUND] * 20 for y in range(20)]
 
     def to_world(self):
         """
