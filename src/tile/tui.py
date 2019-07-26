@@ -1,6 +1,7 @@
 import logging
 import sys
-from tile.grid import Grid, Tile
+from tile.grid import Grid
+from graph.graph import Nand, Wire
 
 from blessed import Terminal
 from blessed.formatters import FormattingString
@@ -35,12 +36,12 @@ class TermUI:
 
         # Used for rendering tiles
         self.glyphs = {
-            Tile.GROUND: '.',
-            Tile.WIRE: '+',
-            Tile.NAND_UP: '^',
-            Tile.NAND_DOWN: 'v',
-            Tile.NAND_LEFT: '<',
-            Tile.NAND_RIGHT: '>',
+            'ground': '.',
+            'wire': '+',
+            'nand_up': '^',
+            'nand_down': 'v',
+            'nand_left': '<',
+            'nand_right': '>',
         }
 
         logger.info("----------------------------------")
@@ -48,8 +49,6 @@ class TermUI:
         logger.info("Terminal size: %dx%d", self.t.width, self.t.height)
 
     def editor_loop(self):
-        print('Placeholder for Terminal UI')
-        print('Press Q to quit')
         while True:
             self.render()
 
@@ -74,15 +73,22 @@ class TermUI:
                 # Toggle between tile pieces
                 x, y = self.cursor_pos
                 current = self.grid.tiles[y][x]
-                self.grid.tiles[y][x] = Tile((current.value + toggle['direction']) % len(Tile))
+                new = None if current else Wire()
+                self.grid.tiles[y][x] = new
+                # Tile((current.value + toggle['direction']) % len(Tile))
 
     def render(self):
+        print(self.t.clear())
+
         # Render the grid
         print(self.t.move(0, 0), end='')
         for y in range(len(self.grid.tiles)):
             for x in range(len(self.grid.tiles[y])):
                 # Get the glyph which represents this tile
-                glyph = self.glyphs.get(self.grid.tiles[y][x], '?')
+                # glyph = self.glyphs.get(self.grid.tiles[y][x], '?')
+                glyph = '.'
+                if isinstance(self.grid.tiles[y][x], Wire):
+                    glyph = '+'
                 print(glyph, end='')
             print()
 

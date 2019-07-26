@@ -1,19 +1,11 @@
-from enum import Enum, auto
 import logging
+from graph.graph import Nand, Wire
 
 logger = logging.getLogger()
 
-class Tile(Enum):
-    GROUND=0
-    WIRE=auto()
-    NAND_UP=auto()
-    NAND_DOWN=auto()
-    NAND_LEFT=auto()
-    NAND_RIGHT=auto()
-
 class Grid:
     def __init__(self):
-        self.tiles = [[Tile.GROUND] * 20 for y in range(20)]
+        self.tiles = [[None] * 20 for y in range(20)]
 
     def to_world(self):
         """
@@ -42,25 +34,20 @@ class Grid:
                 me = (x, y)
                 tile = self.tiles[y][x]
 
-                if tile in [
-                        Tile.NAND_UP,
-                        Tile.NAND_DOWN,
-                        Tile.NAND_LEFT,
-                        Tile.NAND_RIGHT,
-                ]:
+                if isinstance(tile, Nand):
                     nands.append(me)
 
-                elif tile is Tile.WIRE:
+                elif isinstance(tile, Wire):
                     left = (x-1, y)
                     top = (x, y-1)
 
                     try:
-                        if self.get(*left) == tile:
+                        if isinstance(self.get(*left), Wire):
                             label = tile_lookup[left]
                             label_top = tile_lookup[top]  # can cause IndexError
                             if label_top != label:
                                 merge[min(label_top, label)] = max(label_top, label)
-                        elif self.get(*top) == tile:
+                        elif isinstance(self.get(*top), Wire):
                             label = tile_lookup[top]
                             label_left = tile_lookup[left]  # can cause IndexError
                             if label_left != label:
