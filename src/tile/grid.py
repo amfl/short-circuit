@@ -21,7 +21,7 @@ class Grid:
         """
         pass
 
-    def find_wire_groups(self):
+    def find_components(self):
         """
         Performs connected-component labeling to find groups of wires
 
@@ -29,17 +29,28 @@ class Grid:
         """
 
         # Map of tiles to labels
-        tile_lookup = {}  # TODO: UNUSED
+        tile_lookup = {}
         # Map of labels to tiles
         label_lookup = {}
         # Map of labels to labels for later merging
         merge = {}
+        # Map of NANDs
+        nands = []
 
         for y in range(len(self.tiles)):
             for x in range(len(self.tiles[y])):
+                me = (x, y)
                 tile = self.tiles[y][x]
-                if tile is Tile.WIRE:
-                    me = (x, y)
+
+                if tile in [
+                        Tile.NAND_UP,
+                        Tile.NAND_DOWN,
+                        Tile.NAND_LEFT,
+                        Tile.NAND_RIGHT,
+                ]:
+                    nands.append(me)
+
+                elif tile is Tile.WIRE:
                     left = (x-1, y)
                     top = (x, y-1)
 
@@ -63,11 +74,16 @@ class Grid:
 
         # Perform merges
         for k, v in merge.items():
-            # logger.debug(k, v)
             label_lookup[k] = label_lookup[k] + label_lookup[v]
+            for t in label_lookup[v]:
+                tile_lookup[t] = k
             del label_lookup[v]
 
-        return label_lookup
+        return {
+                'label_lookup': label_lookup,
+                'tile_lookup': tile_lookup,
+                'nands': nands
+                }
 
     def get(self, x: int, y: int):
         """

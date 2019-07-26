@@ -86,7 +86,7 @@ class TermUI:
                 print(glyph, end='')
             print()
 
-        logger.info(self.grid.find_wire_groups())
+        logger.info(self.grid.find_components())
 
         # Can change this to be smarter if we ever have a viewport
         print(self.t.move(self.cursor_pos[1], self.cursor_pos[0]), end='')
