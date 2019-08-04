@@ -39,11 +39,16 @@ class InstaWire(SimNode):
         return any(x.get_output() for x in self.inputs)
 
 class Wire(SimNode):
+    next_available_label = 0
 
     def __init__(self):
         super().__init__()
         self.state = False
         self.new_state = False
+        # For finding connected components
+
+        self.label = Wire.next_available_label
+        Wire.next_available_label += 1
 
     def get_output(self) -> bool:
         return self.state
@@ -53,6 +58,14 @@ class Wire(SimNode):
 
     def tick(self):
         self.state = self.new_state
+
+    def __repr__(self):
+        return json.dumps({
+            self.__class__.__name__: hex(id(self)),
+            "out": self.get_output(),
+            "in": [hex(id(x)) for x in self.inputs],
+            "label": self.label
+        })
 
 class Nand(SimNode):
 

@@ -3,9 +3,72 @@ from graph.graph import Nand, Wire
 
 logger = logging.getLogger()
 
+def add(tup1, tup2):
+    """
+    TODO Replace me with something sensible
+    """
+    return (tup1[0] + tup2[0], tup1[1] + tup2[1])
+
 class Grid:
+    next_available_label = 0
+
     def __init__(self):
         self.tiles = [[None] * 20 for y in range(20)]
+
+    def get_all_wire(self):
+        result = []
+        for y in range(len(self.tiles)):
+            for x in range(len(self.tiles[y])):
+                tile = self.get(x, y)
+                if (isinstance(tile, Wire)):
+                    result.append(tile)
+        return result
+
+    def change_tile(self, coords, new):
+        """
+        Changes a tile, performing any joins that need to occur as a
+        result.
+        """
+        # ASSUMPTION: `new` is a brand new wire object.
+        self.tiles[coords[1]][coords[0]] = new
+
+        if isinstance(new, Wire):
+            # We might need to do some joining
+            neighbours_coords = self.get_neighbours_coords(coords)
+            nearby_tiles = [self.get(*coords) for coords in neighbours_coords]
+            logger.debug(f"Nearby tiles: {nearby_tiles}")
+            nearby_alien_wire = [t for t in nearby_tiles if isinstance(t, Wire)]
+            if len(nearby_alien_wire) > 0:  # TODO is this not pythonic?
+
+                # Find the piece of alien wire with the lowest label
+                nearby_alien_wire.sort(key=lambda x: x.label)
+                new_wire = nearby_alien_wire[0]
+
+                logger.debug(f"Performing recursive replace: {new_wire}")
+                # TODO Inefficiency - Have to iterate all neighbours again
+                # because we don't know which of these are actualy wire.
+                for nc in neighbours_coords:
+                    self.recursive_replace_wire(nc, new_wire)
+
+    def recursive_replace_wire(self, old_wire_coords, new_wire):
+        # Replace the current wire
+        self.set(*old_wire_coords, new_wire)
+
+        # In the list of all wire neighbours which aren't the new wire...
+        for nc in self.get_neighbours_coords(old_wire_coords):
+            tile = self.get(*nc)
+            if isinstance(tile, Wire) and tile != new_wire:
+                # Replace them, too!
+                self.recursive_replace_wire(nc, new_wire)
+
+    def get_neighbours_coords(self, coords):
+        neighbours_delta = [
+            (-1,0),
+            (1,0),
+            (0,-1),
+            (0,1)
+        ]
+        return [add(t, coords) for t in neighbours_delta]
 
     def to_world(self):
         """
@@ -81,3 +144,9 @@ class Grid:
             return self.tiles[y][x]
         except IndexError:
             return GROUND
+
+    def set(self, x: int, y: int, new_tile):
+        try:
+            self.tiles[y][x] = new_tile
+        except IndexError:
+            pass

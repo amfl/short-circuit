@@ -26,6 +26,8 @@ class TermUI:
             return {'toggle': {'direction': 1}}
         elif inp == 'p':
             return {'toggle': {'direction': -1}}
+        elif inp == 'z':
+            return {'debug': True}
         else:
             return {'no_op': True}
 
@@ -63,6 +65,13 @@ class TermUI:
 
             if action.get('exit'):
                 break
+            elif action.get('debug'):
+                # Print out a bunch of debug stuff
+                logger.debug('This is the debug string.')
+                # Iterate through the entire grid, print out all the labels.
+                for wire in self.grid.get_all_wire():
+                    logger.debug(wire)
+
             elif move:
                 self.cursor_pos = (
                     self.cursor_pos[0] + move[0],
@@ -74,7 +83,7 @@ class TermUI:
                 x, y = self.cursor_pos
                 current = self.grid.tiles[y][x]
                 new = None if current else Wire()
-                self.grid.tiles[y][x] = new
+                self.grid.change_tile((x, y), new)
                 # Tile((current.value + toggle['direction']) % len(Tile))
 
     def render(self):
