@@ -51,6 +51,10 @@ class Grid:
                     self.recursive_replace_wire(nc, new_wire)
 
     def recursive_replace_wire(self, old_wire_coords, new_wire):
+        old_tile = self.get(*old_wire_coords)
+        if not isinstance(old_tile, Wire):
+            return
+
         # Replace the current wire
         self.set(*old_wire_coords, new_wire)
 
