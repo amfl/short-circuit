@@ -1,6 +1,7 @@
 import logging
 import sys
-from tile.grid import Grid, Tile
+from tile.grid import Grid
+from graph.graph import Nand, Wire
 
 from blessed import Terminal
 from blessed.formatters import FormattingString
@@ -25,6 +26,8 @@ class TermUI:
             return {'toggle': {'direction': 1}}
         elif inp == 'p':
             return {'toggle': {'direction': -1}}
+        elif inp == 'z':
+            return {'debug': True}
         else:
             return {'no_op': True}
 
@@ -35,12 +38,12 @@ class TermUI:
 
         # Used for rendering tiles
         self.glyphs = {
-            Tile.GROUND: '.',
-            Tile.WIRE: '+',
-            Tile.NAND_UP: '^',
-            Tile.NAND_DOWN: 'v',
-            Tile.NAND_LEFT: '<',
-            Tile.NAND_RIGHT: '>',
+            'ground': '.',
+            'wire': '+',
+            'nand_up': '^',
+            'nand_down': 'v',
+            'nand_left': '<',
+            'nand_right': '>',
         }
 
         logger.info("----------------------------------")
@@ -48,8 +51,6 @@ class TermUI:
         logger.info("Terminal size: %dx%d", self.t.width, self.t.height)
 
     def editor_loop(self):
-        print('Placeholder for Terminal UI')
-        print('Press Q to quit')
         while True:
             self.render()
 
@@ -64,6 +65,13 @@ class TermUI:
 
             if action.get('exit'):
                 break
+            elif action.get('debug'):
+                # Print out a bunch of debug stuff
+                logger.debug('This is the debug string.')
+                # Iterate through the entire grid, print out all the labels.
+                for wire in self.grid.get_all_wire():
+                    logger.debug(wire)
+
             elif move:
                 self.cursor_pos = (
                     self.cursor_pos[0] + move[0],
@@ -74,19 +82,26 @@ class TermUI:
                 # Toggle between tile pieces
                 x, y = self.cursor_pos
                 current = self.grid.tiles[y][x]
-                self.grid.tiles[y][x] = Tile((current.value + toggle['direction']) % len(Tile))
+                new = None if current else Wire()
+                self.grid.change_tile((x, y), new)
+                # Tile((current.value + toggle['direction']) % len(Tile))
 
     def render(self):
+        print(self.t.clear())
+
         # Render the grid
         print(self.t.move(0, 0), end='')
         for y in range(len(self.grid.tiles)):
             for x in range(len(self.grid.tiles[y])):
                 # Get the glyph which represents this tile
-                glyph = self.glyphs.get(self.grid.tiles[y][x], '?')
+                # glyph = self.glyphs.get(self.grid.tiles[y][x], '?')
+                glyph = '.'
+                if isinstance(self.grid.tiles[y][x], Wire):
+                    glyph = '+'
                 print(glyph, end='')
             print()
 
-        logger.info(self.grid.find_wire_groups())
+        logger.info(self.grid.find_components())
 
         # Can change this to be smarter if we ever have a viewport
         print(self.t.move(self.cursor_pos[1], self.cursor_pos[0]), end='')

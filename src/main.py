@@ -15,7 +15,7 @@ logging.basicConfig(filename=logname,
 
 def main():
     # Run the prototype code for graph representation
-    proto()
+    # proto()
 
     # Create a grid
     g = Grid()
