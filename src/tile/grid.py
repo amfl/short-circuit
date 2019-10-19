@@ -45,26 +45,22 @@ class Grid:
         nearby_tiles = [self.get(*coords) for coords in neighbours_coords]
         logger.debug(f"Nearby tiles: {nearby_tiles}")
         nearby_alien_wire = [t for t in nearby_tiles if isinstance(t, Wire)]
-        if len(nearby_alien_wire) > 0:  # TODO is this not pythonic?
-            # Figure out if we need join multiple pieces of wire together
+        if len(nearby_alien_wire) > 0:
+            # If we are placing new wire, we have to recursively join the
+            # neighbouring wires together.
             if isinstance(new, Wire):
+                # Neighbouring wires will become whichever had the lowest label.
+                get_new_wire = lambda: min(nearby_alien_wire, key=lambda x: x.label)
 
-                # Find the piece of alien wire with the lowest label
-                nearby_alien_wire.sort(key=lambda x: x.label)
-                new_wire = nearby_alien_wire[0]
-
-                logger.debug(f"Performing recursive replace: {new_wire}")
-                # TODO Inefficiency - Have to iterate all neighbours again
-                # because we don't know which of these are actualy wire.
-                for nc in neighbours_coords:
-                    self.recursive_replace_wire(nc, new_wire)
-
-            # Figure out if we need join split one piece of wire into multiple
+            # If we are deleting a piece of wire, we may have to break up
+            # neighbouring wires into different wires.
             elif new == None:
-                # TODO: Optimize. Same inefficiency as above?
-                # Actually, both code paths are very similar...
-                for coords in neighbours_coords:
-                    self.recursive_replace_wire(coords, Wire())
+                get_new_wire = lambda: Wire()
+
+            # TODO Inefficiency - Have to iterate all neighbours again
+            # because we don't know which of these are actualy wire.
+            for nc in neighbours_coords:
+                self.recursive_replace_wire(nc, get_new_wire())
 
     def recursive_replace_wire(self, old_wire_coords, new_wire):
         old_tile = self.get(*old_wire_coords)
