@@ -16,6 +16,7 @@ class Grid:
         self.tiles = [[None] * 20 for y in range(20)]
 
     def get_all_wire(self):
+        """Returns a list of all wire in the current grid."""
         result = []
         for y in range(len(self.tiles)):
             for x in range(len(self.tiles[y])):
@@ -28,12 +29,20 @@ class Grid:
         """
         Changes a tile, performing any joins that need to occur as a
         result.
+
+        Parameters
+        ----------
+        coords : tuple
+            A tuple of grid coordinates.
+        new: Wire
+            The new grid cell, or `None`. If it is wire, it is
+            assumed to be an entirely new wire object. This method
+            will take care of joining/deduplicating.
         """
-        # ASSUMPTION: `new` is a brand new wire object.
         self.tiles[coords[1]][coords[0]] = new
 
         if isinstance(new, Wire):
-            # We might need to do some joining
+            # Figure out if we need join multiple pieces of wire together
             neighbours_coords = self.get_neighbours_coords(coords)
             nearby_tiles = [self.get(*coords) for coords in neighbours_coords]
             logger.debug(f"Nearby tiles: {nearby_tiles}")
@@ -49,6 +58,10 @@ class Grid:
                 # because we don't know which of these are actualy wire.
                 for nc in neighbours_coords:
                     self.recursive_replace_wire(nc, new_wire)
+
+        elif new == None:
+            # Figure out if we need join split one piece of wire into multiple
+            # TODO
 
     def recursive_replace_wire(self, old_wire_coords, new_wire):
         old_tile = self.get(*old_wire_coords)
