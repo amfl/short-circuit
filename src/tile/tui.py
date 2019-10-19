@@ -89,16 +89,19 @@ class TermUI:
     def render(self):
         print(self.t.clear())
 
+        components = self.grid.find_components()
+
         # Render the grid
         print(self.t.move(0, 0), end='')
         for y in range(len(self.grid.tiles)):
             for x in range(len(self.grid.tiles[y])):
                 # Get the glyph which represents this tile
                 # glyph = self.glyphs.get(self.grid.tiles[y][x], '?')
-                glyph = '.'
+                glyph = self.t.color(15)('.')
                 if isinstance(self.grid.tiles[y][x], Wire):
-                    glyph = '+'
-                print(glyph, end='')
+                    color = components['tile_lookup'][(x,y)] + 1
+                    glyph = self.t.color(color)('+')
+                print(self.t.color(15)(glyph), end='')
             print()
 
         logger.info(self.grid.find_components())
