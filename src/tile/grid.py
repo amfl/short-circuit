@@ -41,13 +41,13 @@ class Grid:
         """
         self.tiles[coords[1]][coords[0]] = new
 
-        if isinstance(new, Wire):
+        neighbours_coords = self.get_neighbours_coords(coords)
+        nearby_tiles = [self.get(*coords) for coords in neighbours_coords]
+        logger.debug(f"Nearby tiles: {nearby_tiles}")
+        nearby_alien_wire = [t for t in nearby_tiles if isinstance(t, Wire)]
+        if len(nearby_alien_wire) > 0:  # TODO is this not pythonic?
             # Figure out if we need join multiple pieces of wire together
-            neighbours_coords = self.get_neighbours_coords(coords)
-            nearby_tiles = [self.get(*coords) for coords in neighbours_coords]
-            logger.debug(f"Nearby tiles: {nearby_tiles}")
-            nearby_alien_wire = [t for t in nearby_tiles if isinstance(t, Wire)]
-            if len(nearby_alien_wire) > 0:  # TODO is this not pythonic?
+            if isinstance(new, Wire):
 
                 # Find the piece of alien wire with the lowest label
                 nearby_alien_wire.sort(key=lambda x: x.label)
@@ -59,9 +59,12 @@ class Grid:
                 for nc in neighbours_coords:
                     self.recursive_replace_wire(nc, new_wire)
 
-        elif new == None:
             # Figure out if we need join split one piece of wire into multiple
-            # TODO
+            elif new == None:
+                # TODO: Optimize. Same inefficiency as above?
+                # Actually, both code paths are very similar...
+                for coords in neighbours_coords:
+                    self.recursive_replace_wire(coords, Wire())
 
     def recursive_replace_wire(self, old_wire_coords, new_wire):
         old_tile = self.get(*old_wire_coords)
