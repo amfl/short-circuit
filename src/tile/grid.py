@@ -159,7 +159,7 @@ class Grid:
         try:
             return self.tiles[y][x]
         except IndexError:
-            return GROUND
+            return None
 
     def set(self, x: int, y: int, new_tile):
         try:
