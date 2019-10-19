@@ -46,6 +46,15 @@ class TermUI:
             'nand_right': '>',
         }
 
+        # 4-bit indexed. Bits are true if there is a neighbour:
+        # Bottom Top Right Left
+        self.wire_glyphs = [
+            'o', '╸', '╺', '━',
+            '╹', '┛', '┗', '┻',
+            '╻', '┓', '┏', '┳',
+            '┃', '┫', '┣', '╋'
+        ]
+
         logger.info("----------------------------------")
         logger.info("Terminal colors: %d", self.t.number_of_colors)
         logger.info("Terminal size: %dx%d", self.t.width, self.t.height)
@@ -87,6 +96,14 @@ class TermUI:
                 # Tile((current.value + toggle['direction']) % len(Tile))
 
     def render(self):
+        def neighbour_glyph_index(x, y):
+            neighbours_coords = self.grid.get_neighbours_coords((x,y))
+            nearby_tiles = [isinstance(self.grid.get(*coords),Wire) for coords in neighbours_coords]
+            return (1 * nearby_tiles[0] +
+                    2 * nearby_tiles[1] +
+                    4 * nearby_tiles[2] +
+                    8 * nearby_tiles[3])
+
         print(self.t.clear())
 
         components = self.grid.find_components()
@@ -100,7 +117,9 @@ class TermUI:
                 glyph = self.t.color(15)('.')
                 if isinstance(self.grid.tiles[y][x], Wire):
                     color = components['tile_lookup'][(x,y)] + 1
-                    glyph = self.t.color(color)('+')
+                    # glyph = self.t.color(color)('+')
+                    glyph = self.wire_glyphs[neighbour_glyph_index(x, y)]
+                    glyph = self.t.color(color)(glyph)
                 print(self.t.color(15)(glyph), end='')
             print()
 
