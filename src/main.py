@@ -18,7 +18,7 @@ def main():
     # proto()
 
     # Create a grid
-    g = Grid()
+    g = Grid(15, 10)
 
     # Start up the UI
     t = TermUI(g)

@@ -12,8 +12,8 @@ def add(tup1, tup2):
 class Grid:
     next_available_label = 0
 
-    def __init__(self):
-        self.tiles = [[None] * 20 for y in range(20)]
+    def __init__(self, x, y):
+        self.tiles = [[None] * x for iy in range(y)]
 
     def get_all_wire(self):
         """Returns a list of all wire in the current grid."""
