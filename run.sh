@@ -24,4 +24,4 @@ docker run --rm -it \
     -e "TERM=${TERM}" \
     -e "REVISION=${REVISION}" \
     short-circuit:latest \
-    python /proj/src/main.py
+    python /proj/src/main.py $@

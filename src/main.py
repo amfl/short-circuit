@@ -3,7 +3,7 @@ import logging
 from graph.proto import *
 from tile.tui import *
 from tile.grid import Grid
-
+import argparse
 
 logger = logging.getLogger()
 logname = 'gameplay.log'
@@ -17,11 +17,22 @@ def main():
     # Run the prototype code for graph representation
     # proto()
 
+    parser = argparse.ArgumentParser(description='A Turing complete... Thing.')
+    box_parser = parser.add_mutually_exclusive_group(required=False)
+    box_parser.add_argument('--box-draw', dest='box_draw', action='store_true',
+                            help='Enable UTF-8 box drawing characters')
+    box_parser.add_argument('--no-box-draw', dest='box_draw', action='store_false',
+                            help='Disable UTF-8 box drawing characters')
+    box_parser.set_defaults(box_draw=True)
+    args = parser.parse_args()
+
+    logger.debug(args)
+
     # Create a grid
     g = Grid(15, 10)
 
     # Start up the UI
-    t = TermUI(g)
+    t = TermUI(args, g)
     # Block until we quit the UI
     t.start()
 

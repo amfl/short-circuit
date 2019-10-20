@@ -31,7 +31,8 @@ class TermUI:
         else:
             return {'no_op': True}
 
-    def __init__(self, grid: Grid):
+    def __init__(self, args, grid: Grid):
+        self.args = args
         self.t = Terminal()
         self.grid = grid
         self.cursor_pos = (0,0)
@@ -117,9 +118,11 @@ class TermUI:
                 glyph = self.t.color(15)('.')
                 if isinstance(self.grid.tiles[y][x], Wire):
                     color = components['tile_lookup'][(x,y)] + 1
-                    # glyph = self.t.color(color)('+')
-                    glyph = self.wire_glyphs[neighbour_glyph_index(x, y)]
-                    glyph = self.t.color(color)(glyph)
+                    if self.args.box_draw:
+                        glyph = self.wire_glyphs[neighbour_glyph_index(x, y)]
+                        glyph = self.t.color(color)(glyph)
+                    else:
+                        glyph = self.t.color(color)('+')
                 print(self.t.color(15)(glyph), end='')
             print()
 
