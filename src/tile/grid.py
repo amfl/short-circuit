@@ -15,6 +15,15 @@ class Grid:
     def __init__(self, x, y):
         self.tiles = [[None] * x for iy in range(y)]
 
+    def serialize(self, writer):
+        for y in range(len(self.tiles)):
+            for x in range(len(self.tiles[y])):
+                glyph = '.'
+                if isinstance(self.tiles[y][x], Wire):
+                    glyph = 'x'
+                writer.write(glyph)
+            writer.write('\n')
+
     def get_all_wire(self):
         """Returns a list of all wire in the current grid."""
         result = []
