@@ -139,7 +139,8 @@ class Grid:
                     label_lookup[label] = label_lookup.get(label, []) + [me]
 
         # Perform merges
-        for k, v in merge.items():
+        # Must walk through backwards to avoid deleting groups with unfinished merges
+        for (k,v) in reversed(list(merge.items())):
             label_lookup[k] = label_lookup[k] + label_lookup[v]
             for t in label_lookup[v]:
                 tile_lookup[t] = k
