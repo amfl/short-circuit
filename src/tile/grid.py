@@ -103,8 +103,8 @@ class Grid:
         tile_lookup = {}
         # Map of labels to tiles
         label_lookup = {}
-        # Map of labels to labels for later merging
-        merge = {}
+        # Set of (label, label) connections for later merging
+        connections = set()
         # Map of NANDs
         nands = []
 
@@ -120,31 +120,46 @@ class Grid:
                     left = (x-1, y)
                     top = (x, y-1)
 
+                    neighbouring_labels = [x for x in [tile_lookup.get(left), tile_lookup.get(top)] if not x is None]
                     try:
-                        if isinstance(self.get(*left), Wire):
-                            label = tile_lookup[left]
-                            label_top = tile_lookup[top]  # can cause IndexError
-                            if label_top != label:
-                                merge[min(label_top, label)] = max(label_top, label)
-                        elif isinstance(self.get(*top), Wire):
-                            label = tile_lookup[top]
-                            label_left = tile_lookup[left]  # can cause IndexError
-                            if label_left != label:
-                                merge[min(label_left, label)] = max(label_left, label)
-                        else:
-                            label = len(label_lookup)
-                    except KeyError:
-                        pass
-                    tile_lookup[me] = label
-                    label_lookup[label] = label_lookup.get(label, []) + [me]
+                        my_label = min(neighbouring_labels)
+                        if len(set(neighbouring_labels)) == 2:
+                            connections.add((my_label, max(neighbouring_labels)))
+                    except ValueError:
+                        # Looks like there are no neighbouring labels, so this is a new group.
+                        my_label = len(label_lookup)
 
-        # Perform merges
-        # Must walk through backwards to avoid deleting groups with unfinished merges
-        for (k,v) in reversed(list(merge.items())):
-            label_lookup[k] = label_lookup[k] + label_lookup[v]
-            for t in label_lookup[v]:
-                tile_lookup[t] = k
-            del label_lookup[v]
+                    tile_lookup[me] = my_label
+                    label_lookup[my_label] = label_lookup.get(my_label, []) + [me]
+
+        logger.debug('-- PRE-MERGES --')
+        logger.debug(f'The grid before merges: {tile_lookup}')
+        logger.debug(f'Connection list: {connections}')
+
+        def find(data, i):
+            if i != data[i]:
+                data[i] = find(data, data[i])
+            return data[i]
+
+        def union(data, i, j):
+            pi, pj = find(data, i), find(data, j)
+            if pi != pj:
+                data[pi] = pj
+
+        data = list(range(len(label_lookup)))
+        # Perform all the unions in the connection list
+        for (i, j) in connections:
+            union(data, i, j)
+
+        for i in range(len(label_lookup)):
+            group = find(data, i)  # Beware that this `find` mutates `data`!
+                                   # Must `find` each element once first if you
+                                   # want to operate on the list directly.
+            if i != group:
+                label_lookup[group] = label_lookup[group] + label_lookup[i]
+                for t in label_lookup[i]:
+                    tile_lookup[t] = group
+                del label_lookup[i]
 
         return {
                 'label_lookup': label_lookup,
