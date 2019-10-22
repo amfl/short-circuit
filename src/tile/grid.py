@@ -157,6 +157,9 @@ class Grid:
         Useful in connected-component labeling so we don't go out of
         bounds
         """
+        if x < 0 or y < 0:
+            # Must handle this explicitly, python is happy to negative index
+            return None
         try:
             return self.tiles[y][x]
         except IndexError:
