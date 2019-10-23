@@ -83,15 +83,22 @@ class TermUI:
                     logger.debug(wire)
 
             elif move:
-                self.cursor_pos = (
+                new_cursor_pos = (
                     self.cursor_pos[0] + move[0],
                     self.cursor_pos[1] + move[1],
                 )
+                # Make sure the cursor coords don't end up negative
+                if min(new_cursor_pos) >= 0:
+                    self.cursor_pos = new_cursor_pos
                 logger.debug('Cursor pos: %s', self.cursor_pos)
             elif toggle:
                 # Toggle between tile pieces
                 x, y = self.cursor_pos
-                current = self.grid.tiles[y][x]
+                try:
+                    current = self.grid.tiles[y][x]
+                except IndexError:
+                    logger.debug('Cannot toggle out of bounds. Ignoring.')
+                    continue
                 new = None if current else Wire()
                 self.grid.change_tile((x, y), new)
                 # Tile((current.value + toggle['direction']) % len(Tile))
