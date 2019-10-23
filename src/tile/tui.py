@@ -107,7 +107,12 @@ class TermUI:
                 # Tile((current.value + tile_toggle['direction']) % len(Tile))
             elif tile_set:
                 x, y = self.cursor_pos
-                self.grid.change_tile((x, y), Nand())
+                current = self.grid.tiles[y][x]
+                if isinstance(current, Nand):
+                    current.rotate_facing(1)
+                else:
+                    self.grid.change_tile((x, y), Nand())
+
 
 
     def render(self):

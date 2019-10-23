@@ -73,7 +73,7 @@ class Nand(SimNode):
         super().__init__()
         self.state = False
         self.new_state = False
-        self.facing = facing
+        self.set_facing(facing)
 
     def get_output(self) -> bool:
         return self.state
@@ -83,6 +83,12 @@ class Nand(SimNode):
 
     def tick(self):
         self.state = self.new_state
+
+    def rotate_facing(self, delta):
+        self.facing = (self.facing + delta) % 4
+
+    def set_facing(self, facing):
+        self.facing = facing
 
 class World:
     """
