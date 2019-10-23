@@ -108,6 +108,7 @@ class TermUI:
         print(self.t.clear())
 
         components = self.grid.find_components()
+        logger.info(components)
 
         # Render the grid
         print(self.t.move(0, 0), end='')
@@ -125,8 +126,6 @@ class TermUI:
                         glyph = self.t.color(color)('+')
                 print(self.t.color(15)(glyph), end='')
             print()
-
-        logger.info(self.grid.find_components())
 
         # Can change this to be smarter if we ever have a viewport
         print(self.t.move(self.cursor_pos[1], self.cursor_pos[0]), end='')
