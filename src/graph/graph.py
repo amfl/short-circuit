@@ -69,10 +69,11 @@ class Wire(SimNode):
 
 class Nand(SimNode):
 
-    def __init__(self):
+    def __init__(self, facing=0):
         super().__init__()
         self.state = False
         self.new_state = False
+        self.facing = facing
 
     def get_output(self) -> bool:
         return self.state

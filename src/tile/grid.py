@@ -54,7 +54,7 @@ class Grid:
 
             # If we are deleting a piece of wire, we may have to break up
             # neighbouring wires into different wires.
-            elif new == None:
+            else:
                 get_new_wire = lambda: Wire()
 
             # TODO Inefficiency - Have to iterate all neighbours again

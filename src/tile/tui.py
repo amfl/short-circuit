@@ -23,9 +23,11 @@ class TermUI:
         elif inp in 'dl':
             return {'move': (1,0)}
         elif inp in ' n':
-            return {'toggle': {'direction': 1}}
+            return {'tile_toggle': {'direction': 1}}
         elif inp == 'p':
-            return {'toggle': {'direction': -1}}
+            return {'tile_toggle': {'direction': -1}}
+        elif inp == 't':
+            return {'tile_set': {'tile': 'nand'}}
         elif inp == 'z':
             return {'debug': True}
         else:
@@ -47,7 +49,7 @@ class TermUI:
             'nand_right': '>',
         }
 
-        # 4-bit indexed. Bits are true if there is a neighbour:
+        # 4-b)it indexed. Bits are true if there is a neighbour:
         # Bottom Top Right Left
         self.wire_glyphs = [
             'o', '╸', '╺', '━',
@@ -71,7 +73,8 @@ class TermUI:
             action = self.handle_inputs(inp)
 
             move = action.get('move')
-            toggle = action.get('toggle')
+            tile_toggle = action.get('tile_toggle')
+            tile_set = action.get('tile_set')
 
             if action.get('exit'):
                 break
@@ -91,7 +94,7 @@ class TermUI:
                 if min(new_cursor_pos) >= 0:
                     self.cursor_pos = new_cursor_pos
                 logger.debug('Cursor pos: %s', self.cursor_pos)
-            elif toggle:
+            elif tile_toggle:
                 # Toggle between tile pieces
                 x, y = self.cursor_pos
                 try:
@@ -101,7 +104,11 @@ class TermUI:
                     continue
                 new = None if current else Wire()
                 self.grid.change_tile((x, y), new)
-                # Tile((current.value + toggle['direction']) % len(Tile))
+                # Tile((current.value + tile_toggle['direction']) % len(Tile))
+            elif tile_set:
+                x, y = self.cursor_pos
+                self.grid.change_tile((x, y), Nand())
+
 
     def render(self):
         def neighbour_glyph_index(x, y):
@@ -124,14 +131,19 @@ class TermUI:
                 # Get the glyph which represents this tile
                 # glyph = self.glyphs.get(self.grid.tiles[y][x], '?')
                 glyph = self.t.color(15)('.')
-                if isinstance(self.grid.tiles[y][x], Wire):
+                tile = self.grid.tiles[y][x]
+                if isinstance(tile, Wire):
                     color = components['tile_lookup'][(x,y)] + 1
                     if self.args.box_draw:
                         glyph = self.wire_glyphs[neighbour_glyph_index(x, y)]
                         glyph = self.t.color(color)(glyph)
                     else:
                         glyph = self.t.color(color)('+')
-                print(self.t.color(15)(glyph), end='')
+                elif isinstance(tile, Nand):
+                    facings = ['^', '>', 'v', '<']
+                    glyph = self.t.white_on_blue(facings[tile.facing])
+
+                print(glyph, end='')
             print()
 
         # Can change this to be smarter if we ever have a viewport
