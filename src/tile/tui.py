@@ -130,7 +130,7 @@ class TermUI:
             for x in range(len(self.grid.tiles[y])):
                 # Get the glyph which represents this tile
                 # glyph = self.glyphs.get(self.grid.tiles[y][x], '?')
-                glyph = self.t.color(15)('.')
+                glyph = self.t.bright_black('.')
                 tile = self.grid.tiles[y][x]
                 if isinstance(tile, Wire):
                     color = components['tile_lookup'][(x,y)] + 1
@@ -141,7 +141,7 @@ class TermUI:
                         glyph = self.t.color(color)('+')
                 elif isinstance(tile, Nand):
                     facings = ['^', '>', 'v', '<']
-                    glyph = self.t.white_on_blue(facings[tile.facing])
+                    glyph = self.t.bold_black_on_white(facings[tile.facing])
 
                 print(glyph, end='')
             print()
