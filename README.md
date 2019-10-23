@@ -1,6 +1,9 @@
 # Short Circuit
 
-A Turing complete... thing, inspired by [Wireworld][wireworld]
+Short Circuit is a **tile-based digital logic sandbox** inspired by [Wireworld][wireworld]
+and [Minecraft's Redstone][redstone].
+
+It is in **pre-alpha**. Expect nothing to work!
 
 ## Goals
 
@@ -18,3 +21,4 @@ A Turing complete... thing, inspired by [Wireworld][wireworld]
 
 [ae-p2p-bus]: https://ae-mod.info/P2P-Tunnel/
 [wireworld]: https://en.wikipedia.org/wiki/Wireworld
+[redstone]: https://minecraft.gamepedia.com/Redstone_Dust#Redstone_component
