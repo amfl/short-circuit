@@ -112,8 +112,8 @@ class TermUI:
 
     def render(self):
         def neighbour_glyph_index(x, y):
-            neighbours_coords = self.grid.get_neighbours_coords((x,y))
-            nearby_tiles = [isinstance(self.grid.get(*coords),Wire) for coords in neighbours_coords]
+            neighbours_tiles = map(lambda t: self.grid.get(*t), self.grid.get_neighbours_coords((x,y)))
+            nearby_tiles = [isinstance(t,Wire) or isinstance(t, Nand) for t in neighbours_tiles]
             return (1 * nearby_tiles[0] +
                     2 * nearby_tiles[1] +
                     4 * nearby_tiles[2] +
