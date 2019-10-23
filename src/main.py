@@ -18,6 +18,10 @@ def main():
     # proto()
 
     parser = argparse.ArgumentParser(description='A Turing complete... Thing.')
+    parser.add_argument('-x', '--width', dest='width', metavar='N', type=int, default=10,
+                        help='Width of the grid')
+    parser.add_argument('-y', '--height', dest='height', metavar='N', type=int, default=10,
+                        help='Height of the grid')
     box_parser = parser.add_mutually_exclusive_group(required=False)
     box_parser.add_argument('--box-draw', dest='box_draw', action='store_true',
                             help='Enable UTF-8 box drawing characters')
@@ -29,7 +33,7 @@ def main():
     logger.debug(args)
 
     # Create a grid
-    g = Grid(15, 10)
+    g = Grid(args.width, args.height)
 
     # Start up the UI
     t = TermUI(args, g)
