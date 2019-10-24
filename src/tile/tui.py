@@ -14,13 +14,13 @@ class TermUI:
         if inp in 'q' or inp.name == 'KEY_ESCAPE':
             return {'exit': True}
 
-        if inp in 'wk':
+        if inp in 'wk' or inp.name == 'KEY_UP':
             return {'move': (0,-1)}
-        elif inp in 'sj':
+        elif inp in 'sj' or inp.name == 'KEY_DOWN':
             return {'move': (0,1)}
-        elif inp in 'ah':
+        elif inp in 'ah' or inp.name == 'KEY_LEFT':
             return {'move': (-1,0)}
-        elif inp in 'dl':
+        elif inp in 'dl' or inp.name == 'KEY_RIGHT':
             return {'move': (1,0)}
         elif inp in ' n':
             return {'tile_toggle': {'direction': 1}}
@@ -31,6 +31,7 @@ class TermUI:
         elif inp == 'z':
             return {'debug': True}
         else:
+            logger.debug("unbound keystroke: %s", inp)
             return {'no_op': True}
 
     def __init__(self, args, grid: Grid):
