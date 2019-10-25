@@ -1,5 +1,10 @@
 # Short Circuit
 
+<p class="shields">
+    <a href="https://hub.docker.com/r/amfl/short-circuit" alt="Docker Automated build">
+        <img src="https://img.shields.io/docker/cloud/automated/amfl/short-circuit" /></a>
+</p>
+
 Short Circuit is a **tile-based digital logic sandbox** inspired by [Wireworld][wireworld]
 and [Minecraft's Redstone][redstone].
 
