@@ -1,5 +1,6 @@
 FROM python:alpine3.9
 
 WORKDIR /proj
-COPY requirements.txt /proj/requirements.txt
-RUN pip install -r requirements.txt
+COPY src /proj/src
+RUN pip install -r src/requirements.txt
+CMD python /proj/src/main.py
