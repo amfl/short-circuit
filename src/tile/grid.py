@@ -18,9 +18,10 @@ class Grid:
     def serialize(self, writer):
         for y in range(len(self.tiles)):
             for x in range(len(self.tiles[y])):
+                me = self.tiles[y][x]
                 glyph = '.'
-                if isinstance(self.tiles[y][x], Wire):
-                    glyph = 'x'
+                if not me is None:
+                    glyph = str(me)
                 writer.write(glyph)
             writer.write('\n')
 
