@@ -1,9 +1,12 @@
+import logging
 import json
 import textwrap
 
+logger = logging.getLogger()
+
 class SimNode:
     def __init__(self):
-        self.inputs = []
+        self.inputs = set()
 
     def get_output(self) -> bool:
         """
@@ -97,16 +100,29 @@ class Nand(SimNode):
         return self.state
 
     def calculate_new_state(self):
-        self.new_state = not all(x.get_output() for x in self.inputs)
+        logger.debug(f'Nand Inputs: {self.inputs}')
+        outputs = [x.get_output() for x in self.inputs]
+        logger.debug(f'Outputs: {outputs}')
+        self.new_state = not all(outputs)
 
     def tick(self):
         self.state = self.new_state
+        logger.info(f'Set my new state: {self.state}')
 
     def rotate_facing(self, delta):
         self.facing = (self.facing + delta) % 4
 
     def set_facing(self, facing):
         self.facing = facing
+
+    def get_facing_delta(self):
+        facing_list = [
+            (0, -1),
+            (1, 0),
+            (0, 1),
+            (-1, 0),
+        ]
+        return facing_list[self.facing]
 
 class World:
     """

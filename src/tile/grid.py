@@ -46,6 +46,35 @@ class Grid:
                 writer.write(glyph)
             writer.write('\n')
 
+    def get_all_components(self):
+        wires = set()
+        nands = set()
+        for y in range(len(self.tiles)):
+            for x in range(len(self.tiles[y])):
+                tile = self.tiles[y][x]
+                if isinstance(tile, Nand):
+                    nands.add((x,y,tile))
+                elif isinstance(tile, Wire):
+                    wires.add(tile)
+        return (wires, nands)
+
+    def refresh_io(self, wires, nands):
+        for wire in wires:
+            wire.inputs = set()
+        for (x, y, nand) in nands:
+            nand.inputs = set()
+            facing_delta = nand.get_facing_delta()
+
+            input_coords = self.get_neighbours_coords((x, y), facing_delta)
+            input_wires = list(filter(lambda x: isinstance(x, Wire), [self.get(cx, cy) for (cx, cy) in input_coords]))
+            nand.inputs = set(input_wires)
+
+            output_wire = self.get(*add(facing_delta, (x,y)))
+            if (isinstance(output_wire, Wire)):
+                output_wire.inputs.add(nand)
+
+            logger.debug(f'Input wires: {input_wires}')
+
     def get_all_wire(self):
         """Returns a list of all wire in the current grid."""
         result = []
@@ -108,13 +137,15 @@ class Grid:
                 # Replace them, too!
                 self.recursive_replace_wire(nc, new_wire)
 
-    def get_neighbours_coords(self, coords):
+    def get_neighbours_coords(self, coords, without=None):
         neighbours_delta = [
             (-1,0),
             (1,0),
             (0,-1),
             (0,1)
         ]
+        if without:
+            neighbours_delta.remove(without)
         return [add(t, coords) for t in neighbours_delta]
 
     def to_world(self):

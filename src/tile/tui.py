@@ -32,6 +32,8 @@ class TermUI:
             return {'debug': True}
         elif inp == 'x':
             return {'save': {'filename': 'output/layout.shs'}}
+        elif inp == '.':
+            return {'tick': 1 }
         else:
             logger.debug("unbound keystroke: %s", inp)
             return {'no_op': True}
@@ -79,6 +81,7 @@ class TermUI:
             tile_toggle = action.get('tile_toggle')
             tile_set = action.get('tile_set')
             save = action.get('save')
+            tick = action.get('tick')
 
             if action.get('exit'):
                 break
@@ -123,6 +126,24 @@ class TermUI:
                 with open(filename, 'w') as f:
                     self.grid.serialize(f)
 
+            elif tick:
+                logger.info('Ticking')
+
+                wires, nands = self.grid.get_all_components()
+                logger.debug(f'STATE BEFORE:\nWires: {wires}\nNands: {nands}')
+
+                # TODO This should not have to be done every time!
+                # If groups are kept up to date as components are
+                # added/removed, we don't need to call this.
+                self.grid.refresh_io(wires, nands)
+
+                for (_, _, nand) in nands:
+                    nand.calculate_new_state()
+                    nand.tick()
+                for wire in wires:
+                    wire.calculate_new_state()
+                    wire.tick()
+
 
     def render(self):
         def neighbour_glyph_index(x, y):
@@ -147,7 +168,8 @@ class TermUI:
                 glyph = self.t.bright_black('.')
                 tile = self.grid.tiles[y][x]
                 if isinstance(tile, Wire):
-                    color = components['tile_lookup'][(x,y)] + 1
+                    color = tile.get_output() + 2
+                    # color = components['tile_lookup'][(x,y)] + 1
                     if self.args.box_draw:
                         glyph = self.wire_glyphs[neighbour_glyph_index(x, y)]
                         glyph = self.t.color(color)(glyph)
