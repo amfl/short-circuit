@@ -36,6 +36,7 @@ class InstaWire(SimNode):
         # InstaWire does not cache state
         # Funny things might happen if `get_output` is not deterministic
         # Infinite loops if InstaWire connects to itself
+        assert (not any(filter(lambda i: isinstance(i, InstaWire), self.inputs))), 'Instawire must never connect with itself.'
         return any(x.get_output() for x in self.inputs)
 
 class Wire(SimNode):
@@ -49,6 +50,10 @@ class Wire(SimNode):
 
         self.label = Wire.next_available_label
         Wire.next_available_label += 1
+
+    def __str__(self):
+        """Used for serialization"""
+        return '+'
 
     def get_output(self) -> bool:
         return self.state
@@ -73,7 +78,20 @@ class Nand(SimNode):
         super().__init__()
         self.state = False
         self.new_state = False
+        self.facing = 0
         self.set_facing(facing)
+        self.serialized = ['u', 'r', 'd', 'l']
+
+    def __str__(self):
+        """Used for serialization"""
+        glyph = self.serialized[self.facing]
+        if self.get_output():
+            glyph = glyph.upper()
+        return glyph
+
+    def deserialize(self, glyph):
+        self.state = glyph.isupper()
+        self.set_facing(self.serialized.index(glyph.lower()))
 
     def get_output(self) -> bool:
         return self.state
@@ -103,7 +121,7 @@ class World:
         Pretty-print all the nodes for debugging.
         """
         for node in self.nodes:
-            print(node)
+            print(repr(node))
 
     def sim(self):
         """

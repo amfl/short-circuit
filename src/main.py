@@ -6,7 +6,7 @@ from tile.grid import Grid
 import argparse
 
 logger = logging.getLogger()
-logname = 'gameplay.log'
+logname = 'output/gameplay.log'
 logging.basicConfig(filename=logname,
                     filemode='a',
                     format='%(asctime)s,%(msecs)d %(module)s %(levelno)s %(message)s',
@@ -14,10 +14,12 @@ logging.basicConfig(filename=logname,
                     level=logging.DEBUG)
 
 def main():
-    # Run the prototype code for graph representation
-    # proto()
 
     parser = argparse.ArgumentParser(description='A Turing complete... Thing.')
+    parser.add_argument('--file',
+                        help='Load state from file')
+    parser.add_argument('--test', action='store_true',
+                        help='Run tests')
     parser.add_argument('-x', '--width', dest='width', metavar='N', type=int, default=10,
                         help='Width of the grid')
     parser.add_argument('-y', '--height', dest='height', metavar='N', type=int, default=10,
@@ -32,13 +34,22 @@ def main():
 
     logger.debug(args)
 
-    # Create a grid
-    g = Grid(args.width, args.height)
+    if args.test:
+        # Run the prototype code for graph representation
+        proto()
 
-    # Start up the UI
-    t = TermUI(args, g)
-    # Block until we quit the UI
-    t.start()
+    else:
+        if args.file:
+            with open(args.file, 'r') as f:
+                g = Grid.deserialize(f)
+        else:
+            # Create a new grid
+            g = Grid(args.width, args.height)
+
+        # Start up the UI
+        t = TermUI(args, g)
+        # Block until we quit the UI
+        t.start()
 
 if __name__ == '__main__':
     main()

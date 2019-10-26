@@ -30,6 +30,8 @@ class TermUI:
             return {'tile_set': {'tile': 'nand'}}
         elif inp == 'z':
             return {'debug': True}
+        elif inp == 'x':
+            return {'save': {'filename': 'output/layout.shs'}}
         else:
             logger.debug("unbound keystroke: %s", inp)
             return {'no_op': True}
@@ -76,6 +78,7 @@ class TermUI:
             move = action.get('move')
             tile_toggle = action.get('tile_toggle')
             tile_set = action.get('tile_set')
+            save = action.get('save')
 
             if action.get('exit'):
                 break
@@ -114,6 +117,11 @@ class TermUI:
                 else:
                     self.grid.change_tile((x, y), Nand())
 
+            elif save:
+                filename = save['filename']
+                logger.info(f'Writing grid state to file: {filename}')
+                with open(filename, 'w') as f:
+                    self.grid.serialize(f)
 
 
     def render(self):

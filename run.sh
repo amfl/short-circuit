@@ -2,7 +2,7 @@
 # Mounts a fresh copy of the source code and starts an ephemeral container.
 # Logs are captured so you can review them at your leisure.
 
-LOGFILE="$(pwd)/gameplay.log"
+OUTDIR="$(pwd)/output"
 
 
 
@@ -13,13 +13,13 @@ evil_git_dirty() {
 }
 REVISION=$(evil_git_dirty)$(git log HEAD~.. --oneline)
 
-# Make sure the log file exists, otherwise docker will try and create it as a dir
-if [ ! -f "${LOGFILE}" ]; then touch "${LOGFILE}"; fi
+# Make sure the output dir exists, otherwise docker will try to create it as root
+mkdir -p "$OUTDIR"
 
 # Run a new container as your current user so log files are created with sensible permissions
 docker run --rm -it \
     -u "$(id -u):$(id -g)" \
-    -v "${LOGFILE}:/proj/gameplay.log" \
+    -v "${OUTDIR}:/proj/output" \
     -v "$(pwd)/src:/proj/src:ro" \
     -e "TERM=${TERM}" \
     -e "REVISION=${REVISION}" \
