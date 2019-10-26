@@ -89,6 +89,10 @@ class Nand(SimNode):
             glyph = glyph.upper()
         return glyph
 
+    def deserialize(self, glyph):
+        self.state = glyph.isupper()
+        self.set_facing(self.serialized.index(glyph.lower()))
+
     def get_output(self) -> bool:
         return self.state
 

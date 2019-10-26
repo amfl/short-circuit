@@ -15,6 +15,27 @@ class Grid:
     def __init__(self, x, y):
         self.tiles = [[None] * x for iy in range(y)]
 
+    @classmethod
+    def deserialize(cls, reader):
+        def f(x):
+            if x == '.':
+                return None
+            elif x == '+':
+                return Wire()
+            else:
+                n = Nand()
+                n.deserialize(x)
+                return n
+
+        data = reader.read()
+        rows = data.split('\n')
+        blah = [list(map(f, list(x))) for x in rows]
+
+        # TODO: Make this not dumb
+        g = Grid(1,1)
+        g.tiles = blah
+        return g
+
     def serialize(self, writer):
         for y in range(len(self.tiles)):
             for x in range(len(self.tiles[y])):

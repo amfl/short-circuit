@@ -16,6 +16,8 @@ logging.basicConfig(filename=logname,
 def main():
 
     parser = argparse.ArgumentParser(description='A Turing complete... Thing.')
+    parser.add_argument('--file',
+                        help='Load state from file')
     parser.add_argument('--test', action='store_true',
                         help='Run tests')
     parser.add_argument('-x', '--width', dest='width', metavar='N', type=int, default=10,
@@ -37,8 +39,12 @@ def main():
         proto()
 
     else:
-        # Create a grid
-        g = Grid(args.width, args.height)
+        if args.file:
+            with open(args.file, 'r') as f:
+                g = Grid.deserialize(f)
+        else:
+            # Create a new grid
+            g = Grid(args.width, args.height)
 
         # Start up the UI
         t = TermUI(args, g)
