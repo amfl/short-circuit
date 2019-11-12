@@ -155,7 +155,7 @@ class TermUI:
                         glyph = self.t.color(color)('+')
                 elif isinstance(tile, Nand):
                     if self.args.box_draw:
-                        facings = ['⯅', '⯈', '⯆', '⯇']
+                        facings = ['▲', '►', '▼', '◄']
                     else:
                         facings = ['^', '>', 'v', '<']
                     glyph = self.t.bold_black_on_white(facings[tile.facing])
