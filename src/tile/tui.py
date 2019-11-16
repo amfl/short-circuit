@@ -168,7 +168,7 @@ class TermUI:
                 glyph = self.t.bright_black('.')
                 tile = self.grid.tiles[y][x]
                 if isinstance(tile, Wire):
-                    color = tile.get_output() + 2
+                    color = 1 if tile.get_output() else 8
                     # color = components['tile_lookup'][(x,y)] + 1
                     if self.args.box_draw:
                         glyph = self.wire_glyphs[neighbour_glyph_index(x, y)]
@@ -180,7 +180,8 @@ class TermUI:
                         facings = ['▲', '►', '▼', '◄']
                     else:
                         facings = ['^', '>', 'v', '<']
-                    glyph = self.t.bold_black_on_white(facings[tile.facing])
+                    glyph = facings[tile.facing]
+                    glyph = self.t.bold_black_on_red(glyph) if tile.get_output() else self.t.bold_black_on_white(glyph)
 
                 print(glyph, end='')
             print()
