@@ -126,10 +126,10 @@ class Nand(SimNode):
 
 class Switch(SimNode):
 
-    def __init__(self, facing=0):
+    def __init__(self, initial_state=False):
         super().__init__()
-        self.state = False
-        self.new_state = False
+        self.state = initial_state
+        self.new_state = initial_state
         self.serialized = ['x', 'o']
 
     def __str__(self):

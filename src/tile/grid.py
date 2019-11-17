@@ -22,6 +22,10 @@ class Grid:
                 return None
             elif x == '+':
                 return Wire()
+            elif x in 'xo':
+                s = Switch()
+                s.deserialize(x)
+                return s
             else:
                 n = Nand()
                 n.deserialize(x)
