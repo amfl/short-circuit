@@ -1,5 +1,5 @@
 import logging
-from graph.graph import Nand, Wire
+from graph.graph import Nand, Wire, Switch
 
 logger = logging.getLogger()
 
@@ -49,6 +49,7 @@ class Grid:
     def get_all_components(self):
         wires = set()
         nands = set()
+        switches = set()
         for y in range(len(self.tiles)):
             for x in range(len(self.tiles[y])):
                 tile = self.tiles[y][x]
@@ -56,9 +57,11 @@ class Grid:
                     nands.add((x,y,tile))
                 elif isinstance(tile, Wire):
                     wires.add(tile)
-        return (wires, nands)
+                elif isinstance(tile, Switch):
+                    switches.add((x,y,tile))
+        return (wires, nands, switches)
 
-    def refresh_io(self, wires, nands):
+    def refresh_io(self, wires, nands, switches):
         for wire in wires:
             wire.inputs = set()
         for (x, y, nand) in nands:
@@ -74,6 +77,11 @@ class Grid:
                 output_wire.inputs.add(nand)
 
             logger.debug(f'Input wires: {input_wires}')
+
+        for (x, y, switch) in switches:
+            output_coords = self.get_neighbours_coords((x, y))
+            for wire in filter(lambda x: isinstance(x, Wire), [self.get(cx, cy) for (cx, cy) in output_coords]):
+                wire.inputs.add(switch)
 
     def get_all_wire(self):
         """Returns a list of all wire in the current grid."""
