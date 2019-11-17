@@ -1,7 +1,7 @@
 import logging
 import sys
 from tile.grid import Grid
-from graph.graph import Nand, Wire
+from graph.graph import SimNode, Nand, Wire, Switch
 
 from blessed import Terminal
 from blessed.formatters import FormattingString
@@ -30,6 +30,8 @@ class TermUI:
             return {'tile_set': {'tile': 'nand'}}
         elif inp == 'z':
             return {'debug': True}
+        elif inp == 'o':
+            return {'tile_set': {'tile': 'switch'}}
         elif inp == 'x':
             return {'save': {'filename': 'output/layout.shs'}}
         elif inp == '.':
@@ -115,10 +117,16 @@ class TermUI:
             elif tile_set:
                 x, y = self.cursor_pos
                 current = self.grid.tiles[y][x]
-                if isinstance(current, Nand):
-                    current.rotate_facing(1)
-                else:
-                    self.grid.change_tile((x, y), Nand())
+                if tile_set['tile'] == 'nand':
+                    if isinstance(current, Nand):
+                        current.rotate_facing(1)
+                    else:
+                        self.grid.change_tile((x, y), Nand())
+                elif tile_set['tile'] == 'switch':
+                    if isinstance(current, Switch):
+                        current.toggle()
+                    else:
+                        self.grid.change_tile((x, y), Switch())
 
             elif save:
                 filename = save['filename']
@@ -148,7 +156,7 @@ class TermUI:
     def render(self):
         def neighbour_glyph_index(x, y):
             neighbours_tiles = map(lambda t: self.grid.get(*t), self.grid.get_neighbours_coords((x,y)))
-            nearby_tiles = [isinstance(t,Wire) or isinstance(t, Nand) for t in neighbours_tiles]
+            nearby_tiles = [isinstance(t,SimNode) for t in neighbours_tiles]
             return (1 * nearby_tiles[0] +
                     2 * nearby_tiles[1] +
                     4 * nearby_tiles[2] +
@@ -167,6 +175,7 @@ class TermUI:
                 # glyph = self.glyphs.get(self.grid.tiles[y][x], '?')
                 glyph = self.t.bright_black('.')
                 tile = self.grid.tiles[y][x]
+
                 if isinstance(tile, Wire):
                     color = 1 if tile.get_output() else 8
                     # color = components['tile_lookup'][(x,y)] + 1
@@ -181,6 +190,9 @@ class TermUI:
                     else:
                         facings = ['^', '>', 'v', '<']
                     glyph = facings[tile.facing]
+                    glyph = self.t.bold_black_on_red(glyph) if tile.get_output() else self.t.bold_black_on_white(glyph)
+                elif isinstance(tile, Switch):
+                    glyph = str(tile)
                     glyph = self.t.bold_black_on_red(glyph) if tile.get_output() else self.t.bold_black_on_white(glyph)
 
                 print(glyph, end='')
