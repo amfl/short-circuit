@@ -124,6 +124,31 @@ class Nand(SimNode):
         ]
         return facing_list[self.facing]
 
+class Switch(SimNode):
+
+    def __init__(self, facing=0):
+        super().__init__()
+        self.state = False
+        self.new_state = False
+        self.serialized = ['x', 'o']
+
+    def __str__(self):
+        """Used for serialization"""
+        return self.serialized[self.get_output()]
+
+    def deserialize(self, glyph):
+        # This can throw ValueError
+        self.state = self.serialized.index(glyph)
+
+    def get_output(self) -> bool:
+        return self.state
+
+    def set_state(self, new_state: bool):
+        self.state = new_state
+
+    def toggle(self):
+        self.state = not self.state
+
 class World:
     """
     Simply a holder for our nodes.
