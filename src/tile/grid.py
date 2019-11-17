@@ -20,8 +20,10 @@ class Grid:
         def f(x):
             if x == '.':
                 return None
-            elif x == '+':
-                return Wire()
+            elif x in '+-':
+                w = Wire()
+                w.deserialize(x)
+                return w
             elif x in 'xo':
                 s = Switch()
                 s.deserialize(x)

@@ -54,9 +54,12 @@ class Wire(SimNode):
         self.label = Wire.next_available_label
         Wire.next_available_label += 1
 
+    def deserialize(self, glyph):
+        self.state = '-+'.index(glyph)
+
     def __str__(self):
         """Used for serialization"""
-        return '+'
+        return '-+'[self.state]
 
     def get_output(self) -> bool:
         return self.state
