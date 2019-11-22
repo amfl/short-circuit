@@ -152,13 +152,13 @@ class Switch(SimNode):
     def toggle(self):
         self.state = not self.state
 
-class World:
+class Graph:
     """
-    Simply a holder for our nodes.
+    A holder for our SimNodes. Contains logic on how to do updates.
     """
 
-    def __init__(self, nodelist):
-        self.nodes = nodelist
+    def __init__(self, nodes):
+        self.nodes = nodes
 
     def print(self):
         """
@@ -171,7 +171,10 @@ class World:
         """
         Advance the simulation.
         """
+        # Can be parallel
         for node in self.nodes:
             node.calculate_new_state()
+
+        # Can be parallel
         for node in self.nodes:
             node.tick()
