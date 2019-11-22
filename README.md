@@ -27,3 +27,11 @@ It is in **pre-alpha**. Expect nothing to work!
 [ae-p2p-bus]: https://ae-mod.info/P2P-Tunnel/
 [wireworld]: https://en.wikipedia.org/wiki/Wireworld
 [redstone]: https://minecraft.gamepedia.com/Redstone_Dust#Redstone_component
+
+## Testing
+
+To run tests, use:
+
+```bash
+python3 ./src/test.py
+```
