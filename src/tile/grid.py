@@ -258,6 +258,9 @@ class Grid:
         ----------
         mechanism : string
             The rules to use when ticking.
+
+            a: Wire is a normal simnode with state
+            b: Wire proxies the state of attached inputs
         """
         wires, nands, switches = self.get_all_components()
         logger.debug(f'STATE BEFORE:\nWires: {wires}\nNands: {nands}')
