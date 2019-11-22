@@ -16,10 +16,11 @@ class Grid:
         self.tiles = [[None] * x for iy in range(y)]
 
     @classmethod
-    def deserialize(cls, reader):
+    def deserialize_from_string(cls, string):
         def f(x):
             if x == '.':
                 return None
+            # TODO Make all SimNodes have a `deserialize` method and just iterates through a list of all classes catching exceptions until you find one that deserializes. Stops us having deserialization logic scattered everywhere.
             elif x in '+-':
                 w = Wire()
                 w.deserialize(x)
@@ -33,14 +34,19 @@ class Grid:
                 n.deserialize(x)
                 return n
 
-        data = reader.read()
-        rows = data.split('\n')
+        rows = string.split('\n')
         blah = [list(map(f, list(x))) for x in rows]
 
         # TODO: Make this not dumb
         g = Grid(1,1)
         g.tiles = blah
         return g
+
+    @classmethod
+    def deserialize_from_reader(cls, reader):
+
+        data = reader.read()
+        return cls.deserialize_from_string(data)
 
     def serialize(self, writer):
         for y in range(len(self.tiles)):
@@ -242,6 +248,43 @@ class Grid:
                 'tile_lookup': tile_lookup,
                 'nands': nands
                 }
+
+    def tick(self, mechanism='a'):
+        """ Ticks the grid world.
+
+        TODO: This should be in the graph class...
+
+        Parameters
+        ----------
+        mechanism : string
+            The rules to use when ticking.
+        """
+        wires, nands, switches = self.get_all_components()
+        logger.debug(f'STATE BEFORE:\nWires: {wires}\nNands: {nands}')
+
+        # TODO This should not have to be done every time!
+        # If groups are kept up to date as components are
+        # added/removed, we don't need to call this.
+        self.refresh_io(wires, nands, switches)
+
+        if mechanism == 'a':
+            nand_nodes = set([n[2] for n in nands])
+            switch_nodes = set([s[2] for s in switches])
+            simnodes = nand_nodes.union(wires).union(switch_nodes)
+            for node in simnodes:
+                node.calculate_new_state()
+            for node in simnodes:
+                node.tick()
+
+        if mechanism == 'b':
+            # Note that switches don't tick.
+            # There is nothing in-sim that updates them.
+            for (_, _, nand) in nands:
+                nand.calculate_new_state()
+                nand.tick()
+            for wire in wires:
+                wire.calculate_new_state()
+                wire.tick()
 
     def get(self, x: int, y: int):
         """

@@ -136,24 +136,7 @@ class TermUI:
 
             elif tick:
                 logger.info('Ticking')
-
-                wires, nands, switches = self.grid.get_all_components()
-                logger.debug(f'STATE BEFORE:\nWires: {wires}\nNands: {nands}')
-
-                # TODO This should not have to be done every time!
-                # If groups are kept up to date as components are
-                # added/removed, we don't need to call this.
-                self.grid.refresh_io(wires, nands, switches)
-
-                # Note that switches don't tick.
-                # There is nothing in-sim that updates them.
-                for (_, _, nand) in nands:
-                    nand.calculate_new_state()
-                    nand.tick()
-                for wire in wires:
-                    wire.calculate_new_state()
-                    wire.tick()
-
+                self.grid.tick()
 
     def render(self):
         def neighbour_glyph_index(x, y):

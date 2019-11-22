@@ -41,7 +41,9 @@ def main():
     else:
         if args.file:
             with open(args.file, 'r') as f:
-                g = Grid.deserialize(f)
+                g = Grid.deserialize_from_reader(f)
+                # TODO #1 Need to properly do connected component labelling.
+                # Right now we never call `recursive_replace_wire` when loading from file. Makes testing impossible.
         else:
             # Create a new grid
             g = Grid(args.width, args.height)
