@@ -24,6 +24,7 @@ class Grid:
             elif x in '+-':
                 w = Wire()
                 w.deserialize(x)
+                # TODO recursively merge wire here...?
                 return w
             elif x in 'xo':
                 s = Switch()
@@ -40,6 +41,24 @@ class Grid:
         # TODO: Make this not dumb
         g = Grid(1,1)
         g.tiles = blah
+
+        # Perform connected component labelling
+        # g.merge_wire_groups()
+        components = g.find_components()
+
+        logger.debug(components)
+
+        # Replace all the wires with one wire
+        # TODO put this in a func, don't just write it here... Do this next
+        # Be careful about other graph items linking to stuff... Is it really okay to just replace all the wires? Will other SimNodes still hold references?
+        for label, coords in components['label_lookup'].items():
+            logger.debug(f'label: {label} coords: {coords}')
+            # Make a new wire for this wire group
+            w = Wire()
+            for coord in coords:
+                x, y = coord
+                g.tiles[y][x] = w
+
         return g
 
     @classmethod
@@ -114,7 +133,7 @@ class Grid:
         ----------
         coords : tuple
             A tuple of grid coordinates.
-        new: Wire
+        new: SimNode
             The new grid cell, or `None`. If it is wire, it is
             assumed to be an entirely new wire object. This method
             will take care of joining/deduplicating.
