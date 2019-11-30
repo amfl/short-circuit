@@ -6,7 +6,12 @@ def SimNode:
         pass
 
 class Wire(SimNode):
-    pass
+    def __init__(self):
+        self.inputs = set()
+        # Of all SimNodes, only Wire keeps track of its outputs.
+        # It does this to ensure speedy split/join operations.
+        self.outputs = set()
+        self.pieces = set()
     # Thoughts:
     #  - Maintain a list of coords which this wire is comprised of
     #    Then we can refer to it when doing wire splits/joins?
@@ -23,8 +28,22 @@ class Switch(SimNode):
 def Board:
     def __init__(self):
         self.grid = None
-        self.node_cache = set()
-        self.wire_cache = set()
+        # TODO Do I want a bidict?
+        # coord -> SimNode, SimNode -> [coord]
+        # Or some kind of horrible bidirectional multimap...
+        # https://stackoverflow.com/questions/39624938/need-a-bidirectional-map-which-allows-duplicate-values-and-returns-list-of-valu
+        self.node_cache = dict() # coord -> SimNode
+        self.wire_cache = dict() # Wire -> [coords]
+                                 # Keep track of coords 
+
+        # coord1 -> wire1
+        # coord2 -> wire1
+        # coord3 -> node2
+
+        # thus, inversely...
+
+        # wire1 -> coord1, coord2
+        # node2 -> coord3
 
     def tick(self):
         """Ticks the sim. Could work in parallel. Only touches the graph_cache."""
@@ -56,6 +75,8 @@ def Board:
 
     def _grid_wire_join(self, coords, node: SimNode):
         """Join multiple wires into one if required"""
+        # neighbouring_wires = filter(lambda x: isinstance(x, Wire), neighbours(coords))
+        # new_wire = union_wires(neighbouring_wires + [node])
         pass
 
     def _grid_wire_break(self, coords):
