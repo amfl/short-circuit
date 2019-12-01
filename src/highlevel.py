@@ -7,11 +7,21 @@ logging.basicConfig(filename=logname,
                     datefmt='%H:%M:%S',
                     level=logging.DEBUG)
 
+def add(tup1, tup2):
+    """
+    TODO Replace me with something sensible
+    """
+    return (tup1[0] + tup2[0], tup1[1] + tup2[1])
+
 class SimNode:
     def output(self):
         return False
 
     def calculate_next_output(self):
+        pass
+
+    def recalculate_io(self, my_coords, board):
+        """Add neighbouring SimNodes to my inputs. Inject myself into my neighbours inputs."""
         pass
 
 class Wire(SimNode):
@@ -46,6 +56,20 @@ class Nand(SimNode):
         self.signal = False
         self.facing = 0
 
+    def recalculate_io(self, my_coord, board):
+        neighbour_nodes = [board.get(add(x, my_coord)) for x in board.neighbour_deltas()]
+
+        # Here we split the neighbours into inputs and outputs
+        output = neighbour_nodes.pop(self.facing)
+
+        self.inputs = set(list(filter(lambda x: isinstance(x, SimNode), neighbour_nodes)))
+
+        # Attempt to notify the output space (Not all nodes have inputs, or there may be nothing there)
+        try:
+            output.inputs.add(self)
+        except AttributeError:
+            pass
+
     @classmethod
     def deserialize(cls, glyph):
         n = Nand()
@@ -79,6 +103,15 @@ class Switch(SimNode):
 
     def output(self):
         return self.signal
+
+    def recalculate_io(self, my_coord, board):
+        neighbour_nodes = [board.get(add(x, my_coord)) for x in board.neighbour_deltas()]
+        for output in neighbour_nodes:
+            # Attempt to notify the output space (Not all nodes have inputs, or there may be nothing there)
+            try:
+                output.inputs.add(self)
+            except AttributeError:
+                pass
 
 class Board:
     def __init__(self):
@@ -115,7 +148,13 @@ class Board:
     def get(self, coords):
         """Gets a SimNode or None via grid coords"""
         (x, y) = coords
-        return self.grid[y][x]
+        if x < 0 or y < 0:
+            # Must handle this explicitly, python is happy to negative index
+            return None
+        try:
+            return self.grid[y][x]
+        except IndexError:
+            return None
 
     def set(self, coords, node: SimNode):
         """Places a SimNode on the board. This also performs any wire joining and IO updates."""
@@ -129,7 +168,8 @@ class Board:
     @classmethod
     def deserialize(cls, string):
         """Rebuilds the grid from a string."""
-        def f(glyph):
+
+        def to_simnode(glyph):
             for cls in [Wire, Nand, Switch]:
                 try:
                     return cls.deserialize(glyph)
@@ -140,9 +180,10 @@ class Board:
         rows = string.split('\n')
 
         board = Board()
-        board.grid = [list(map(f, list(x))) for x in rows]
+        board.grid = [list(map(to_simnode, list(x))) for x in rows]
 
         board._grid_global_wire_join()
+        board._grid_global_io_refresh()
 
         return board
 
@@ -161,8 +202,30 @@ class Board:
         return string[:-1]
 
     #####################################################
+    # Convenience methods
+    #####################################################
+
+    @classmethod
+    def neighbour_deltas(cls):
+        return [(0,-1), (1,0), (0,1), (-1,0)]
+
+    #####################################################
     # Internal use methods
     #####################################################
+
+    def _get_caches(self):
+        """Gets all data which SHOULD be cached (but atm isn't).
+        TODO: Get rid of this method entirely, ideally"""
+        wires = set()
+        nodes = set()
+        for y in range(len(self.grid)):
+            for x in range(len(self.grid[y])):
+                me = self.grid[y][x]
+                if isinstance(me, Wire):
+                    wires.add(me)
+                elif isinstance(me, SimNode):
+                    nodes.add((x, y, me))
+        return (wires, nodes)
 
     def _grid_local_wire_join(self, coords, node: SimNode):
         """Join multiple wires into one if required"""
@@ -253,3 +316,10 @@ class Board:
             for (x,y) in coords:
                 # Low-level wire replace.
                 self.grid[y][x] = wire
+
+    def _grid_global_io_refresh(self):
+        wires, nodes = self._get_caches()
+        for wire in wires:
+            wire.inputs = set()
+        for (x, y, node) in nodes:
+            node.recalculate_io((x, y), self)

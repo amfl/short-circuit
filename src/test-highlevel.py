@@ -58,18 +58,27 @@ class SerdeTest(unittest.TestCase):
         self.assertEqual(right_wires[0], right_wires[1])
         self.assertNotEqual(left_wires[0], right_wires[0])
 
-class ClockTest(unittest.TestCase):
+class IOTest(unittest.TestCase):
     def setUp(self):
-        board_str = ("-r-\n"
-                     "-.-\n"
-                     "---\n")
+        board_str = ("-r-..-\n"
+                     "-.-..x\n"
+                     "---..-\n")
         self.board = Board.deserialize(board_str)
-        self.nand = self.board.get((1,0))
-        self.wire = self.board.get((1,2))
 
-    def testIO(self):
-        self.assertEqual(self.nand.inputs, set([self.wire]))
-        self.assertEqual(self.wire.inputs, set([self.nand]))
+        self.nand = self.board.get((1,0))
+        self.nand_wire = self.board.get((1,2))
+
+        self.switch = self.board.get((5,1))
+        self.switch_wires = [ self.board.get((5,0)),
+                              self.board.get((5,2)) ]
+
+    def testNandIO(self):
+        self.assertEqual(self.nand.inputs, set([self.nand_wire]))
+        self.assertEqual(self.nand_wire.inputs, set([self.nand]))
+
+    def testSwitchIO(self):
+        for wire in self.switch_wires:
+            self.assertEqual(wire.inputs, set([self.switch]))
 
 class BasicTest(unittest.TestCase):
     """Make sure that the output of the NAND turns on after a few ticks. This
