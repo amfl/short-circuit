@@ -23,8 +23,17 @@ class DeserializationTest(unittest.TestCase):
         w = self.board.get((0,0))
         self.assertIsInstance(w, Wire)
     def testNands(self):
-        # TODO Implement me
-        self.assertTrue(False)
+        unpowered_nands = [(2,0), (3,0), (4,0), (5,0)]
+        powered_nands   = [(2,1), (3,1), (4,1), (5,1)]
+        unpowered_nands = list(map(lambda x: self.board.get(x), unpowered_nands))
+        powered_nands = list(map(lambda x: self.board.get(x), powered_nands))
+        for x in powered_nands:
+            self.assertIsInstance(x, Nand)
+            self.assertTrue(x.output())
+        for x in unpowered_nands:
+            self.assertIsInstance(x, Nand)
+            self.assertFalse(x.output())
+
     def testSwitches(self):
         switches = [ self.board.get((2,2)),
                      self.board.get((3,2)) ]

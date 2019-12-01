@@ -1,5 +1,5 @@
 class SimNode:
-    def get_output(self):
+    def output(self):
         return False
 
     def calculate_next_output(self):
@@ -38,6 +38,9 @@ class Nand(SimNode):
         n.facing = cls.serialized_glyphs.index(glyph.lower())
         n.state = glyph.isupper()
         return n
+
+    def output(self):
+        return self.state
 
 class Switch(SimNode):
     serialized_glyphs = ['x', 'o']
