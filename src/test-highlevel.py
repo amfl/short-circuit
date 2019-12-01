@@ -58,6 +58,19 @@ class SerdeTest(unittest.TestCase):
         self.assertEqual(right_wires[0], right_wires[1])
         self.assertNotEqual(left_wires[0], right_wires[0])
 
+class ClockTest(unittest.TestCase):
+    def setUp(self):
+        board_str = ("-r-\n"
+                     "-.-\n"
+                     "---\n")
+        self.board = Board.deserialize(board_str)
+        self.nand = self.board.get((1,0))
+        self.wire = self.board.get((1,2))
+
+    def testIO(self):
+        self.assertEqual(self.nand.inputs, set([self.wire]))
+        self.assertEqual(self.wire.inputs, set([self.nand]))
+
 class BasicTest(unittest.TestCase):
     """Make sure that the output of the NAND turns on after a few ticks. This
     should be true regardless of which ticking mechanism is used."""

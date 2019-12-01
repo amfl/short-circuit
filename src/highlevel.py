@@ -42,6 +42,7 @@ class Nand(SimNode):
     serialized_glyphs = ['u', 'r', 'd', 'l']
 
     def __init__(self):
+        self.inputs = set()
         self.signal = False
         self.facing = 0
 
