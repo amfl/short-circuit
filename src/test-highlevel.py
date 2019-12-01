@@ -62,8 +62,8 @@ class BasicTest(unittest.TestCase):
     """Make sure that the output of the NAND turns on after a few ticks. This
     should be true regardless of which ticking mechanism is used."""
     def setUp(self):
-        gridStr = ("-r--\n")
-        self.board = Board.deserialize(gridStr)
+        board_str = ("-r--\n")
+        self.board = Board.deserialize(board_str)
 
     def runTest(self, mechanism):
         logging.debug(f'Testing mechanism: {mechanism}')
