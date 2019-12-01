@@ -1,3 +1,12 @@
+import logging
+logger = logging.getLogger()
+logname = 'output/gameplay.log'
+logging.basicConfig(filename=logname,
+                    filemode='a',
+                    format='%(asctime)s,%(msecs)d %(module)s %(levelno)s %(message)s',
+                    datefmt='%H:%M:%S',
+                    level=logging.DEBUG)
+
 class SimNode:
     def output(self):
         return False
@@ -131,6 +140,9 @@ class Board:
 
         board = Board()
         board.grid = [list(map(f, list(x))) for x in rows]
+
+        board._grid_global_wire_join()
+
         return board
 
     def serialize(self):
@@ -151,15 +163,92 @@ class Board:
     # Internal use methods
     #####################################################
 
-    def _grid_wire_join(self, coords, node: SimNode):
+    def _grid_local_wire_join(self, coords, node: SimNode):
         """Join multiple wires into one if required"""
         # neighbouring_wires = filter(lambda x: isinstance(x, Wire), neighbours(coords))
         # new_wire = union_wires(neighbouring_wires + [node])
         pass
 
-    def _grid_wire_break(self, coords):
+    def _grid_local_wire_break(self, coords):
         """Break a wire into multiple bits if required"""
         pass
 
-    def _grid_neighbour_io_refresh(self, coords):
+    def _grid_local_io_refresh(self, coords):
         pass
+
+    def _grid_global_wire_join(self):
+        """Globally reevaluates the grid and performs low-level wire joins.
+        Only used for debugging or in deserialization.
+        Does NOT fix inputs/outputs.
+        Performs connected-component labeling to find groups of wires
+
+        https://en.wikipedia.org/wiki/Connected-component_labeling#Two-pass
+        """
+
+        # Map of tiles to labels
+        tile_lookup = {}
+        # Map of labels to tiles
+        label_lookup = {}
+        # Set of (label, label) connections for later merging
+        connections = set()
+
+        for y in range(len(self.grid)):
+            for x in range(len(self.grid[y])):
+                me = (x, y)
+                tile = self.grid[y][x]
+
+                if isinstance(tile, Wire):
+                    left = (x-1, y)
+                    top = (x, y-1)
+
+                    neighbouring_labels = [x for x in [tile_lookup.get(left), tile_lookup.get(top)] if not x is None]
+                    try:
+                        my_label = min(neighbouring_labels)
+                        if len(set(neighbouring_labels)) == 2:
+                            connections.add((my_label, max(neighbouring_labels)))
+                    except ValueError:
+                        # Looks like there are no neighbouring labels, so this is a new group.
+                        my_label = len(label_lookup)
+
+                    # Add myself into the tile_lookup
+                    tile_lookup[me] = my_label
+                    # Add myself into the label_lookup
+                    label_lookup[my_label] = label_lookup.get(my_label, []) + [me]
+
+        logger.debug('-- PRE-MERGES --')
+        logger.debug(f'The grid before merges: {tile_lookup}')
+        logger.debug(f'Connection list: {connections}')
+
+        def find(data, i):
+            if i != data[i]:
+                data[i] = find(data, data[i])
+            return data[i]
+
+        def union(data, i, j):
+            pi, pj = find(data, i), find(data, j)
+            if pi != pj:
+                data[pi] = pj
+
+        data = list(range(len(label_lookup)))
+        # Perform all the unions in the connection list
+        for (i, j) in connections:
+            union(data, i, j)
+
+        for i in range(len(label_lookup)):
+            group = find(data, i)  # Beware that this `find` mutates `data`!
+                                   # Must `find` each element once first if you
+                                   # want to operate on the list directly.
+            if i != group:
+                label_lookup[group] = label_lookup[group] + label_lookup[i]
+                for t in label_lookup[i]:
+                    tile_lookup[t] = group
+                del label_lookup[i]
+
+        # Component labelling complete!
+        # Now we can do what we came here for - Let's replace all the wires so that each group is made up of the same Wire object.
+        for label, coords in label_lookup.items():
+            logger.debug(f'Wire group: {label} is made from coords: {coords}')
+            wire = Wire()
+            for (x,y) in coords:
+                # Low-level wire replace.
+                self.grid[y][x] = wire
