@@ -26,30 +26,49 @@ class Wire(SimNode):
         assert(glyph in cls.serialized_glyphs)
         return Wire()
 
+    def serialize(self):
+        return self.serialized_glyphs[0]
+
 class Nand(SimNode):
     serialized_glyphs = ['u', 'r', 'd', 'l']
 
     def __init__(self):
-        self.state = False
+        self.signal = False
+        self.facing = 0
 
     @classmethod
     def deserialize(cls, glyph):
         n = Nand()
         n.facing = cls.serialized_glyphs.index(glyph.lower())
-        n.state = glyph.isupper()
+        n.signal = glyph.isupper()
         return n
 
+    def serialize(self):
+        glyph = self.serialized_glyphs[self.facing]
+        if self.output():
+            glyph = glyph.upper()
+        return glyph
+
     def output(self):
-        return self.state
+        return self.signal
 
 class Switch(SimNode):
     serialized_glyphs = ['x', 'o']
 
+    def __init__(self):
+        self.signal = False
+
     @classmethod
     def deserialize(cls, glyph):
         s = Switch()
-        s.state = cls.serialized_glyphs.index(glyph)
+        s.signal = cls.serialized_glyphs.index(glyph)
         return s
+
+    def serialize(self):
+        return self.serialized_glyphs[self.output()]
+
+    def output(self):
+        return self.signal
 
 class Board:
     def __init__(self):
@@ -99,7 +118,7 @@ class Board:
 
     @classmethod
     def deserialize(cls, string):
-        """Rebuilds the board from a string."""
+        """Rebuilds the grid from a string."""
         def f(glyph):
             for cls in [Wire, Nand, Switch]:
                 try:
@@ -116,7 +135,17 @@ class Board:
 
     def serialize(self):
         """Dumps current grid state to a string."""
-        pass
+        string = ''
+        for y in range(len(self.grid)):
+            for x in range(len(self.grid[y])):
+                me = self.grid[y][x]
+                glyph = '.'
+                if not me is None:
+                    glyph = me.serialize()
+                string += glyph
+            string += '\n'
+        # Slice off the last newline otherwise we end up with two of them
+        return string[:-1]
 
     #####################################################
     # Internal use methods
