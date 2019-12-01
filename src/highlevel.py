@@ -1,4 +1,4 @@
-def SimNode:
+class SimNode:
     def get_output(self):
         return False
 
@@ -6,6 +6,8 @@ def SimNode:
         pass
 
 class Wire(SimNode):
+    serialized_glyphs = ['-']
+
     def __init__(self):
         self.inputs = set()
         # Of all SimNodes, only Wire keeps track of its outputs.
@@ -19,14 +21,36 @@ class Wire(SimNode):
     #    instead of) a set of inputs/outputs. Then we can do splits/joins
     #    without ever checking neighbours
 
+    @classmethod
+    def deserialize(cls, glyph):
+        assert(glyph in cls.serialized_glyphs)
+        return Wire()
+
 class Nand(SimNode):
-    pass
+    serialized_glyphs = ['u', 'r', 'd', 'l']
+
+    def __init__(self):
+        self.state = False
+
+    @classmethod
+    def deserialize(cls, glyph):
+        n = Nand()
+        n.facing = cls.serialized_glyphs.index(glyph.lower())
+        n.state = glyph.isupper()
+        return n
 
 class Switch(SimNode):
-    pass
+    serialized_glyphs = ['x', 'o']
 
-def Board:
+    @classmethod
+    def deserialize(cls, glyph):
+        s = Switch()
+        s.state = cls.serialized_glyphs.index(glyph)
+        return s
+
+class Board:
     def __init__(self):
+        # Multidimensional array
         self.grid = None
         # TODO Do I want a bidict?
         # coord -> SimNode, SimNode -> [coord]
@@ -45,14 +69,23 @@ def Board:
         # wire1 -> coord1, coord2
         # node2 -> coord3
 
-    def tick(self):
+    def initialize_grid(self, dimensions):
+        (x, y) = dimensions
+        self.grid = [[None] * x for iy in range(y)]
+
+    def tick(self, mechanism='a'):
         """Ticks the sim. Could work in parallel. Only touches the graph_cache."""
         for node in self.node_cache:
             node.tick()
         for wire in self.wire_cache:
             wire.tick()
 
-    def safe_grid_mutate(self, coords, node: SimNode):
+    def get(self, coords):
+        """Gets a SimNode or None via grid coords"""
+        (x, y) = coords
+        return self.grid[y][x]
+
+    def set(self, coords, node: SimNode):
         """Places a SimNode on the board. This also performs any wire joining and IO updates."""
         if isinstance(node, Wire):
             self._grid_wire_join(coords, node)
@@ -61,9 +94,22 @@ def Board:
 
         self._grid_neighbour_io_refresh(coords)
 
-    def deserialize(self, string):
+    @classmethod
+    def deserialize(cls, string):
         """Rebuilds the board from a string."""
-        pass
+        def f(glyph):
+            for cls in [Wire, Nand, Switch]:
+                try:
+                    return cls.deserialize(glyph)
+                except:
+                    continue
+            return None
+
+        rows = string.split('\n')
+
+        board = Board()
+        board.grid = [list(map(f, list(x))) for x in rows]
+        return board
 
     def serialize(self):
         """Dumps current grid state to a string."""
