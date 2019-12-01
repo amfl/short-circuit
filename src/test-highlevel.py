@@ -45,6 +45,19 @@ class SerdeTest(unittest.TestCase):
         board_str = self.board.serialize()
         self.assertEqual(self.board_str, board_str)
 
+    def testWireGroups(self):
+        # Take two wires from the left group
+        left_wires = [ self.board.get((0,0)),
+                       self.board.get((1,2)) ]
+
+        # Take two wires from the right group
+        right_wires = [ self.board.get((4,2)),
+                        self.board.get((5,2)) ]
+
+        self.assertEqual(left_wires[0], left_wires[1])
+        self.assertEqual(right_wires[0], right_wires[1])
+        self.assertNotEqual(left_wires[0], right_wires[0])
+
 class BasicTest(unittest.TestCase):
     """Make sure that the output of the NAND turns on after a few ticks. This
     should be true regardless of which ticking mechanism is used."""
