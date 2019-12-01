@@ -71,7 +71,7 @@ class BasicTest(unittest.TestCase):
             self.board.tick(mechanism)
 
         outputWire = self.board.get((3,0))
-        self.assertTrue(outputWire.get_output())
+        self.assertTrue(outputWire.output())
 
     def testMechansimA(self):
         self.runTest('a')
@@ -102,10 +102,10 @@ class DirectSimNodeOutputTest(unittest.TestCase):
         for i in range(10):
             self.boards[0].tick('b')
             self.boards[1].tick('a')
-            print(self.sampleNands[1].get_output())
+            print(self.sampleNands[1].output())
             self.assertTrue(
-                    self.sampleNands[0].get_output(),
-                    self.sampleNands[1].get_output())
+                    self.sampleNands[0].output(),
+                    self.sampleNands[1].output())
 
 if __name__ == '__main__':
     unittest.main()
