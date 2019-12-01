@@ -13,16 +13,16 @@ class FromScratchTest(unittest.TestCase):
     def testBasicGet(self):
         self.assertIsNone(self.board.get((3,3)))
 
-class DeserializationTest(unittest.TestCase):
+class SerdeTest(unittest.TestCase):
     def setUp(self):
-        stuff = ("--udlr\n"
-                 "--UDLR\n"
-                 "--xo--\n")
-        self.board = Board.deserialize(stuff)
-    def testWire(self):
+        self.board_str = ("--udlr\n"
+                          "--UDLR\n"
+                          "--xo--\n")
+        self.board = Board.deserialize(self.board_str)
+    def testWireDeserialization(self):
         w = self.board.get((0,0))
         self.assertIsInstance(w, Wire)
-    def testNands(self):
+    def testNandDeserialization(self):
         unpowered_nands = [(2,0), (3,0), (4,0), (5,0)]
         powered_nands   = [(2,1), (3,1), (4,1), (5,1)]
         unpowered_nands = list(map(lambda x: self.board.get(x), unpowered_nands))
@@ -34,11 +34,16 @@ class DeserializationTest(unittest.TestCase):
             self.assertIsInstance(x, Nand)
             self.assertFalse(x.output())
 
-    def testSwitches(self):
+    def testSwitchDeserialization(self):
         switches = [ self.board.get((2,2)),
                      self.board.get((3,2)) ]
         for switch in switches:
             self.assertIsInstance(switch, Switch)
+
+    def testSerdeE2E(self):
+        """Deserializing and reserializing should result in the same string"""
+        board_str = self.board.serialize()
+        self.assertEqual(self.board_str, board_str)
 
 class BasicTest(unittest.TestCase):
     """Make sure that the output of the NAND turns on after a few ticks. This
