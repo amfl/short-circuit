@@ -80,6 +80,13 @@ class IOTest(unittest.TestCase):
         for wire in self.switch_wires:
             self.assertEqual(wire.inputs, set([self.switch]))
 
+    def test1TickClock(self):
+        """Check a NAND connected to itself forms a 1 tick clock."""
+        for i in range(10):
+            desired = bool(i % 2)
+            self.assertEqual(self.nand_wire.output(), desired)
+            self.board.tick()
+
 class BasicTest(unittest.TestCase):
     """Make sure that the output of the NAND turns on after a few ticks. This
     should be true regardless of which ticking mechanism is used."""
