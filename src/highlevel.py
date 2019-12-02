@@ -172,6 +172,10 @@ class Board:
         for (_,_,node) in nodes:
             logger.debug(f'Ticking the node: {node}')
             node.calculate_next_output()
+        # Because nodes can connect directly to other nodes, the tick step must
+        # be separate from the calculation step. Otherwise, the unsorted nature
+        # of the node set will produce non-deterministic behavior.
+        for (_,_,node) in nodes:
             node.tick()
         for wire in wires:
             logger.debug(f'Ticking the wire: {wire}')

@@ -122,8 +122,7 @@ class BasicTest(unittest.TestCase):
         self.assertIs(self.output_wires[0], self.output_wires[1])
 
 class DirectSimNodeOutputTest(unittest.TestCase):
-    """CAUTION: Atm this fails half the time, possibly due to order of set iteration being undefined."""
-
+    """Outputting directly to a SimNode should be the same as doing so via a wire"""
     def setUp(self):
         board_str = ("-rR-.\n"
                      ".....\n"
@@ -154,7 +153,8 @@ class DirectSimNodeOutputTest(unittest.TestCase):
             self.assertEqual(self.output_wires[0].output(), self.output_wires[1].output())
             self.board.tick()
 
-class AdvancedDirectSimNodeOutputTest(unittest.TestCase):
+class DirectSimNodeOutputClockTest(unittest.TestCase):
+    """Outputting directly to a SimNode should be the same as doing so via a wire"""
     def setUp(self):
         nogap = ("--D\n"
                  "u.d\n"
