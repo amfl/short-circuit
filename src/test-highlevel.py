@@ -17,11 +17,19 @@ class SerdeTest(unittest.TestCase):
     def setUp(self):
         self.board_str = ("--udlr\n"
                           "--UDLR\n"
-                          "--xo--\n")
+                          "U-xo--\n")
         self.board = Board.deserialize(self.board_str)
+
     def testWireDeserialization(self):
         w = self.board.get((0,0))
         self.assertIsInstance(w, Wire)
+
+    def testWireDeserializationState(self):
+        """With no ticking, the output wire should already be on, because the bottom left NAND is outputting to it."""
+
+        w = self.board.get((0,0))
+        self.assertTrue(w.output())
+
     def testNandDeserialization(self):
         unpowered_nands = [(2,0), (3,0), (4,0), (5,0)]
         powered_nands   = [(2,1), (3,1), (4,1), (5,1)]
@@ -94,21 +102,59 @@ class BasicTest(unittest.TestCase):
         board_str = ("-r--\n")
         self.board = Board.deserialize(board_str)
 
-    def runTest(self, mechanism):
-        logging.debug(f'Testing mechanism: {mechanism}')
+        self.input_wire = self.board.get((0,0))
+        self.nand = self.board.get((1,0))
+        self.output_wires = [ self.board.get((2,0)),
+                              self.board.get((3,0))  ]
+
+    def testIO(self):
+        self.assertIs(list(self.output_wires[0].inputs)[0], self.nand)
+
+    def testBasicTicking(self):
         for i in range(5):
-            self.board.tick(mechanism)
+            self.board.tick()
 
-        outputWire = self.board.get((3,0))
-        self.assertTrue(outputWire.output())
+        self.assertFalse(self.input_wire.output())
+        self.assertTrue(self.nand.output())
+        self.assertTrue(self.output_wires[0].output())
 
-    def testMechansimA(self):
-        self.runTest('a')
-
-    def testMechansimB(self):
-        self.runTest('b')
+    def testWireGroups(self):
+        self.assertIs(self.output_wires[0], self.output_wires[1])
 
 class DirectSimNodeOutputTest(unittest.TestCase):
+    """CAUTION: Atm this fails half the time, possibly due to order of set iteration being undefined."""
+
+    def setUp(self):
+        board_str = ("-rR-.\n"
+                     ".....\n"
+                     "-r-R-\n")
+        self.board = Board.deserialize(board_str)
+
+        self.input_wires = [ self.board.get((0,0)),
+                             self.board.get((0,2)) ]
+        self.left_nands = [ self.board.get((1,0)),
+                            self.board.get((1,2)) ]
+        self.right_nands = [ self.board.get((2,0)),
+                             self.board.get((3,2)) ]
+        self.output_wires = [ self.board.get((3,0)),
+                              self.board.get((4,2)) ]
+        self.middle_wire = self.board.get((2, 2))
+
+    def testIO(self):
+        """Make sure the top two nands connect directly together"""
+        self.assertIs(list(self.right_nands[0].inputs)[0], self.left_nands[0])
+
+    def testTick(self):
+        for i in range(5):
+            print(self.board.serialize())
+            self.assertEqual(self.left_nands[1].output(), self.middle_wire.output())
+
+            self.assertEqual(self.left_nands[0].output(), self.left_nands[1].output())
+            self.assertEqual(self.right_nands[0].output(), self.right_nands[1].output())
+            self.assertEqual(self.output_wires[0].output(), self.output_wires[1].output())
+            self.board.tick()
+
+class AdvancedDirectSimNodeOutputTest(unittest.TestCase):
     def setUp(self):
         nogap = ("--D\n"
                  "u.d\n"
@@ -120,21 +166,22 @@ class DirectSimNodeOutputTest(unittest.TestCase):
                     Board.deserialize(nogap),
                     Board.deserialize(gap),
                 ]
-        self.sampleNands = list(map(lambda x: x.get((0,1)), self.boards))
+        # Keep track of the leftmost nand on both grids.
+        # They should both always have the same value.
+        self.nands = list(map(lambda x: x.get((0,1)), self.boards))
 
     def testOutputToSimNodes(self):
         """
         Make sure that SimNodes can output directly to other SimNodes without
         stuff in between.
         """
-        print(self.sampleNands)
         for i in range(10):
-            self.boards[0].tick('b')
-            self.boards[1].tick('a')
-            print(self.sampleNands[1].output())
-            self.assertTrue(
-                    self.sampleNands[0].output(),
-                    self.sampleNands[1].output())
+            print(f'==={i}===')
+            print(self.boards[0].serialize())
+            print(self.boards[1].serialize())
+            self.assertEqual(self.nands[0].output(), self.nands[1].output())
+            self.boards[0].tick()
+            self.boards[1].tick()
 
 class BridgeTest(unittest.TestCase):
     """Wires will need to cross each other!"""

@@ -20,6 +20,9 @@ class SimNode:
     def calculate_next_output(self):
         pass
 
+    def tick(self):
+        pass
+
     def recalculate_io(self, my_coords, board):
         """Add neighbouring SimNodes to my inputs. Inject myself into my neighbours inputs."""
         pass
@@ -28,6 +31,9 @@ class Wire(SimNode):
     serialized_glyphs = ['-']
 
     def __init__(self):
+        self.signal = False
+        self.new_signal = False
+
         self.inputs = set()
         # Of all SimNodes, only Wire keeps track of its outputs.
         # It does this to ensure speedy split/join operations.
@@ -48,12 +54,22 @@ class Wire(SimNode):
     def serialize(self):
         return self.serialized_glyphs[0]
 
+    def calculate_next_output(self):
+        self.new_signal = any(x.output() for x in self.inputs)
+
+    def tick(self):
+        self.signal = self.new_signal
+
+    def output(self):
+        return self.signal
+
 class Nand(SimNode):
     serialized_glyphs = ['u', 'r', 'd', 'l']
 
     def __init__(self):
         self.inputs = set()
         self.signal = False
+        self.new_signal = False
         self.facing = 0
 
     def recalculate_io(self, my_coord, board):
@@ -85,6 +101,15 @@ class Nand(SimNode):
 
     def output(self):
         return self.signal
+
+    def calculate_next_output(self):
+        outputs = [x.output() for x in self.inputs]
+        logger.debug(f'nand: Outputs: {outputs}')
+        self.new_signal = not all(outputs)
+        logger.debug(f'nand: New signal: {self.new_signal}')
+
+    def tick(self):
+        self.signal = self.new_signal
 
 class Switch(SimNode):
     serialized_glyphs = ['x', 'o']
@@ -138,11 +163,19 @@ class Board:
         (x, y) = dimensions
         self.grid = [[None] * x for iy in range(y)]
 
-    def tick(self, mechanism='a'):
+    def tick(self):
         """Ticks the sim. Could work in parallel. Only touches the graph_cache."""
-        for node in self.node_cache:
+        wires, nodes = self._get_caches()
+        logger.info(f'TICKING THE SIM')
+        logger.debug(f'wires: {wires} nodes: {nodes}')
+
+        for (_,_,node) in nodes:
+            logger.debug(f'Ticking the node: {node}')
+            node.calculate_next_output()
             node.tick()
-        for wire in self.wire_cache:
+        for wire in wires:
+            logger.debug(f'Ticking the wire: {wire}')
+            wire.calculate_next_output()
             wire.tick()
 
     def get(self, coords):
@@ -323,3 +356,9 @@ class Board:
             wire.inputs = set()
         for (x, y, node) in nodes:
             node.recalculate_io((x, y), self)
+
+        # Tick all the wires so they are all are up to date
+        # Remember wires are direct proxies for the output of their inputs
+        for wire in wires:
+            wire.calculate_next_output()
+            wire.tick()
