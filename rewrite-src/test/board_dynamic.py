@@ -42,6 +42,24 @@ class TestWireJoin(unittest.TestCase):
         final_wire = self.board.get((4,0))
         self.assertTrue(final_wire.output())
 
+class TestComponentReplacement(unittest.TestCase):
+    """Make sure that joining two wire groups via deleting a component doesn't
+    leave incorrect IO information around."""
+    def setUp(self):
+        board_str = ("-R-r-")
+        self.board = Board.deserialize(board_str)
+        self.board.set((3,0), Wire())
+
+        self.nand = self.board.get((1,0))
+
+    def testJoinedWiresAreSameObject(self):
+        self.assertIs(self.board.get((2,0)), self.board.get((3,0)))
+        self.assertIs(self.board.get((4,0)), self.board.get((3,0)))
+
+    def testIO(self):
+        final_wire = self.board.get((4,0))
+        self.assertEqual(len(final_wire.inputs), 1)
+        self.assertIs(list(final_wire.inputs)[0], self.nand)
 
 if __name__ == '__main__':
     unittest.main()
