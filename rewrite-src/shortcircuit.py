@@ -3,15 +3,18 @@ logger = logging.getLogger()
 logname = 'output/gameplay.log'
 logging.basicConfig(filename=logname,
                     filemode='a',
-                    format='%(asctime)s,%(msecs)d %(module)s %(levelno)s %(message)s',
+                    format=('%(asctime)s,%(msecs)d %(module)s '
+                            '%(levelno)s %(message)s'),
                     datefmt='%H:%M:%S',
                     level=logging.DEBUG)
+
 
 def add(tup1, tup2):
     """
     TODO Replace me with something sensible
     """
     return (tup1[0] + tup2[0], tup1[1] + tup2[1])
+
 
 class SimNode:
     def output(self):
@@ -24,8 +27,10 @@ class SimNode:
         pass
 
     def recalculate_io(self, my_coords, board):
-        """Add neighbouring SimNodes to my inputs. Inject myself into my neighbours inputs."""
+        """Add neighbouring SimNodes to my inputs. Inject myself into my
+        neighbours inputs."""
         pass
+
 
 class Wire(SimNode):
     serialized_glyphs = ['-']
@@ -63,6 +68,7 @@ class Wire(SimNode):
     def output(self):
         return self.signal
 
+
 class Nand(SimNode):
     serialized_glyphs = ['u', 'r', 'd', 'l']
 
@@ -73,14 +79,17 @@ class Nand(SimNode):
         self.facing = 0
 
     def recalculate_io(self, my_coord, board):
-        neighbour_nodes = [board.get(add(x, my_coord)) for x in board.neighbour_deltas()]
+        neighbour_nodes = board.neighbour_objs(my_coord)
 
         # Here we split the neighbours into inputs and outputs
         output = neighbour_nodes.pop(self.facing)
 
-        self.inputs = set(list(filter(lambda x: isinstance(x, SimNode), neighbour_nodes)))
+        self.inputs = set(filter(
+            lambda x: isinstance(x, SimNode),
+            neighbour_nodes))
 
-        # Attempt to notify the output space (Not all nodes have inputs, or there may be nothing there)
+        # Attempt to notify the output space (Not all nodes have inputs, or
+        # there may be nothing there)
         try:
             output.inputs.add(self)
         except AttributeError:
@@ -111,6 +120,7 @@ class Nand(SimNode):
     def tick(self):
         self.signal = self.new_signal
 
+
 class Switch(SimNode):
     serialized_glyphs = ['x', 'o']
 
@@ -130,13 +140,15 @@ class Switch(SimNode):
         return self.signal
 
     def recalculate_io(self, my_coord, board):
-        neighbour_nodes = [board.get(add(x, my_coord)) for x in board.neighbour_deltas()]
+        neighbour_nodes = board.neighbour_objs(my_coord)
         for output in neighbour_nodes:
-            # Attempt to notify the output space (Not all nodes have inputs, or there may be nothing there)
+            # Attempt to notify the output space (Not all nodes have inputs, or
+            # there may be nothing there)
             try:
                 output.inputs.add(self)
             except AttributeError:
                 pass
+
 
 class Board:
     def __init__(self):
@@ -146,9 +158,8 @@ class Board:
         # coord -> SimNode, SimNode -> [coord]
         # Or some kind of horrible bidirectional multimap...
         # https://stackoverflow.com/questions/39624938/need-a-bidirectional-map-which-allows-duplicate-values-and-returns-list-of-valu
-        self.node_cache = dict() # coord -> SimNode
-        self.wire_cache = dict() # Wire -> [coords]
-                                 # Keep track of coords 
+        self.node_cache = dict()  # coord -> SimNode
+        self.wire_cache = dict()  # Wire -> [coords]
 
         # coord1 -> wire1
         # coord2 -> wire1
@@ -164,18 +175,19 @@ class Board:
         self.grid = [[None] * x for iy in range(y)]
 
     def tick(self):
-        """Ticks the sim. Could work in parallel. Only touches the graph_cache."""
+        """Ticks the sim. Could work in parallel. Only touches the
+        graph_cache."""
         wires, nodes = self._get_caches()
         logger.info(f'TICKING THE SIM')
         logger.debug(f'wires: {wires} nodes: {nodes}')
 
-        for (_,_,node) in nodes:
+        for (_, _, node) in nodes:
             logger.debug(f'Ticking the node: {node}')
             node.calculate_next_output()
         # Because nodes can connect directly to other nodes, the tick step must
         # be separate from the calculation step. Otherwise, the unsorted nature
         # of the node set will produce non-deterministic behavior.
-        for (_,_,node) in nodes:
+        for (_, _, node) in nodes:
             node.tick()
         for wire in wires:
             logger.debug(f'Ticking the wire: {wire}')
@@ -194,7 +206,8 @@ class Board:
             return None
 
     def set(self, coords, node: SimNode):
-        """Places a SimNode on the board. This also performs any wire joining and IO updates."""
+        """Places a SimNode on the board. This also performs any wire joining
+        and IO updates."""
 
         # self._grid_neighbour_io_refresh(coords)
 
@@ -236,7 +249,7 @@ class Board:
             for x in range(len(self.grid[y])):
                 me = self.grid[y][x]
                 glyph = '.'
-                if not me is None:
+                if me is not None:
                     glyph = me.serialize()
                 string += glyph
             string += '\n'
@@ -249,7 +262,7 @@ class Board:
 
     @classmethod
     def neighbour_deltas(cls):
-        return [(0,-1), (1,0), (0,1), (-1,0)]
+        return [(0, -1), (1, 0), (0, 1), (-1, 0)]
 
     @classmethod
     def neighbour_coords(cls, coords):
@@ -287,7 +300,8 @@ class Board:
         new_wire : Wire
             The new wire to replace the entire group with.
         """
-        neighbouring_wires = [sn for sn in self.neighbour_objs(coords) if isinstance(sn, Wire)]
+        neighbouring_wires = [sn for sn in self.neighbour_objs(coords)
+                              if isinstance(sn, Wire)]
 
         new_wire.signal = any([w.output() for w in neighbouring_wires])
 
@@ -347,23 +361,27 @@ class Board:
                 me = (x, y)
                 tile = self.grid[y][x]
 
-                if isinstance(tile, Wire):
-                    left = (x-1, y)
-                    top = (x, y-1)
+                if not isinstance(tile, Wire):
+                    continue
 
-                    neighbouring_labels = [x for x in [tile_lookup.get(left), tile_lookup.get(top)] if not x is None]
-                    try:
-                        my_label = min(neighbouring_labels)
-                        if len(set(neighbouring_labels)) == 2:
-                            connections.add((my_label, max(neighbouring_labels)))
-                    except ValueError:
-                        # Looks like there are no neighbouring labels, so this is a new group.
-                        my_label = len(label_lookup)
+                left = tile_lookup.get((x-1, y))
+                top = tile_lookup.get((x, y-1))
 
-                    # Add myself into the tile_lookup
-                    tile_lookup[me] = my_label
-                    # Add myself into the label_lookup
-                    label_lookup[my_label] = label_lookup.get(my_label, []) + [me]
+                neighbouring_labels = [x for x in [left, top] if x is not None]
+                try:
+                    my_label = min(neighbouring_labels)
+                    if len(set(neighbouring_labels)) == 2:
+                        connections.add(
+                                (my_label, max(neighbouring_labels)))
+                except ValueError:
+                    # Looks like there are no neighbouring labels, so this is a
+                    # new group.
+                    my_label = len(label_lookup)
+
+                # Add myself into the tile_lookup
+                tile_lookup[me] = my_label
+                # Add myself into the label_lookup
+                label_lookup[my_label] = label_lookup.get(my_label, []) + [me]
 
         logger.debug('-- PRE-MERGES --')
         logger.debug(f'The grid before merges: {tile_lookup}')
@@ -385,9 +403,11 @@ class Board:
             union(data, i, j)
 
         for i in range(len(label_lookup)):
-            group = find(data, i)  # Beware that this `find` mutates `data`!
-                                   # Must `find` each element once first if you
-                                   # want to operate on the list directly.
+            # Beware that this `find` mutates `data`!
+            # Must `find` each element once first if you want to operate on the
+            # list directly.
+            group = find(data, i)
+
             if i != group:
                 label_lookup[group] = label_lookup[group] + label_lookup[i]
                 for t in label_lookup[i]:
@@ -395,11 +415,12 @@ class Board:
                 del label_lookup[i]
 
         # Component labelling complete!
-        # Now we can do what we came here for - Let's replace all the wires so that each group is made up of the same Wire object.
+        # Now we can do what we came here for - Let's replace all the wires so
+        # that each group is made up of the same Wire object.
         for label, coords in label_lookup.items():
             logger.debug(f'Wire group: {label} is made from coords: {coords}')
             wire = Wire()
-            for (x,y) in coords:
+            for (x, y) in coords:
                 # Low-level wire replace.
                 self.grid[y][x] = wire
 

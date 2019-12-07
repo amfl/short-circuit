@@ -1,17 +1,20 @@
-import logging
 import unittest
 from shortcircuit import Board, Switch, Nand, Wire
+
 
 class TestTest(unittest.TestCase):
     def testThings(self):
         self.assertEqual(True, True)
 
+
 class FromScratchTest(unittest.TestCase):
     def setUp(self):
         self.board = Board()
-        self.board.initialize_grid((10,10))
+        self.board.initialize_grid((10, 10))
+
     def testBasicGet(self):
-        self.assertIsNone(self.board.get((3,3)))
+        self.assertIsNone(self.board.get((3, 3)))
+
 
 class SerdeTest(unittest.TestCase):
     def setUp(self):
@@ -21,20 +24,21 @@ class SerdeTest(unittest.TestCase):
         self.board = Board.deserialize(self.board_str)
 
     def testWireDeserialization(self):
-        w = self.board.get((0,0))
+        w = self.board.get((0, 0))
         self.assertIsInstance(w, Wire)
 
     def testWireDeserializationState(self):
-        """With no ticking, the output wire should already be on, because the bottom left NAND is outputting to it."""
+        """With no ticking, the output wire should already be on, because the
+        bottom left NAND is outputting to it."""
 
-        w = self.board.get((0,0))
+        w = self.board.get((0, 0))
         self.assertTrue(w.output())
 
     def testNandDeserialization(self):
-        unpowered_nands = [(2,0), (3,0), (4,0), (5,0)]
-        powered_nands   = [(2,1), (3,1), (4,1), (5,1)]
-        unpowered_nands = list(map(lambda x: self.board.get(x), unpowered_nands))
-        powered_nands = list(map(lambda x: self.board.get(x), powered_nands))
+        unpowered_nands = [(2, 0), (3, 0), (4, 0), (5, 0)]
+        unpowered_nands = [self.board.get(x) for x in unpowered_nands]
+        powered_nands = [(2, 1), (3, 1), (4, 1), (5, 1)]
+        powered_nands = [self.board.get(x) for x in powered_nands]
         for x in powered_nands:
             self.assertIsInstance(x, Nand)
             self.assertTrue(x.output())
@@ -43,8 +47,8 @@ class SerdeTest(unittest.TestCase):
             self.assertFalse(x.output())
 
     def testSwitchDeserialization(self):
-        switches = [ self.board.get((2,2)),
-                     self.board.get((3,2)) ]
+        switches = [self.board.get((2, 2)),
+                    self.board.get((3, 2))]
         for switch in switches:
             self.assertIsInstance(switch, Switch)
 
@@ -55,16 +59,17 @@ class SerdeTest(unittest.TestCase):
 
     def testWireGroups(self):
         # Take two wires from the left group
-        left_wires = [ self.board.get((0,0)),
-                       self.board.get((1,2)) ]
+        left_wires = [self.board.get((0, 0)),
+                      self.board.get((1, 2))]
 
         # Take two wires from the right group
-        right_wires = [ self.board.get((4,2)),
-                        self.board.get((5,2)) ]
+        right_wires = [self.board.get((4, 2)),
+                       self.board.get((5, 2))]
 
         self.assertEqual(left_wires[0], left_wires[1])
         self.assertEqual(right_wires[0], right_wires[1])
         self.assertNotEqual(left_wires[0], right_wires[0])
+
 
 class IOTest(unittest.TestCase):
     def setUp(self):
@@ -73,12 +78,12 @@ class IOTest(unittest.TestCase):
                      "---..-\n")
         self.board = Board.deserialize(board_str)
 
-        self.nand = self.board.get((1,0))
-        self.nand_wire = self.board.get((1,2))
+        self.nand = self.board.get((1, 0))
+        self.nand_wire = self.board.get((1, 2))
 
-        self.switch = self.board.get((5,1))
-        self.switch_wires = [ self.board.get((5,0)),
-                              self.board.get((5,2)) ]
+        self.switch = self.board.get((5, 1))
+        self.switch_wires = [self.board.get((5, 0)),
+                             self.board.get((5, 2))]
 
     def testNandIO(self):
         self.assertEqual(self.nand.inputs, set([self.nand_wire]))
@@ -95,6 +100,7 @@ class IOTest(unittest.TestCase):
             self.assertEqual(self.nand_wire.output(), desired)
             self.board.tick()
 
+
 class BasicTest(unittest.TestCase):
     """Make sure that the output of the NAND turns on after a few ticks. This
     should be true regardless of which ticking mechanism is used."""
@@ -102,10 +108,10 @@ class BasicTest(unittest.TestCase):
         board_str = ("-r--\n")
         self.board = Board.deserialize(board_str)
 
-        self.input_wire = self.board.get((0,0))
-        self.nand = self.board.get((1,0))
-        self.output_wires = [ self.board.get((2,0)),
-                              self.board.get((3,0))  ]
+        self.input_wire = self.board.get((0, 0))
+        self.nand = self.board.get((1, 0))
+        self.output_wires = [self.board.get((2, 0)),
+                             self.board.get((3, 0))]
 
     def testIO(self):
         self.assertIs(list(self.output_wires[0].inputs)[0], self.nand)
@@ -121,22 +127,24 @@ class BasicTest(unittest.TestCase):
     def testWireGroups(self):
         self.assertIs(self.output_wires[0], self.output_wires[1])
 
+
 class DirectSimNodeOutputTest(unittest.TestCase):
-    """Outputting directly to a SimNode should be the same as doing so via a wire"""
+    """Outputting directly to a SimNode should be the same as doing so via a
+    wire"""
     def setUp(self):
         board_str = ("-rR-.\n"
                      ".....\n"
                      "-r-R-\n")
         self.board = Board.deserialize(board_str)
 
-        self.input_wires = [ self.board.get((0,0)),
-                             self.board.get((0,2)) ]
-        self.left_nands = [ self.board.get((1,0)),
-                            self.board.get((1,2)) ]
-        self.right_nands = [ self.board.get((2,0)),
-                             self.board.get((3,2)) ]
-        self.output_wires = [ self.board.get((3,0)),
-                              self.board.get((4,2)) ]
+        self.input_wires = [self.board.get((0, 0)),
+                            self.board.get((0, 2))]
+        self.left_nands = [self.board.get((1, 0)),
+                           self.board.get((1, 2))]
+        self.right_nands = [self.board.get((2, 0)),
+                            self.board.get((3, 2))]
+        self.output_wires = [self.board.get((3, 0)),
+                             self.board.get((4, 2))]
         self.middle_wire = self.board.get((2, 2))
 
     def testIO(self):
@@ -146,29 +154,36 @@ class DirectSimNodeOutputTest(unittest.TestCase):
     def testTick(self):
         for i in range(5):
             print(self.board.serialize())
-            self.assertEqual(self.left_nands[1].output(), self.middle_wire.output())
+            self.assertEqual(self.left_nands[1].output(),
+                             self.middle_wire.output())
 
-            self.assertEqual(self.left_nands[0].output(), self.left_nands[1].output())
-            self.assertEqual(self.right_nands[0].output(), self.right_nands[1].output())
-            self.assertEqual(self.output_wires[0].output(), self.output_wires[1].output())
+            self.assertEqual(self.left_nands[0].output(),
+                             self.left_nands[1].output())
+            self.assertEqual(self.right_nands[0].output(),
+                             self.right_nands[1].output())
+            self.assertEqual(self.output_wires[0].output(),
+                             self.output_wires[1].output())
             self.board.tick()
 
+
 class DirectSimNodeOutputClockTest(unittest.TestCase):
-    """Outputting directly to a SimNode should be the same as doing so via a wire"""
+    """Outputting directly to a SimNode should be the same as doing so via a
+    wire"""
     def setUp(self):
-        nogap = ("--D\n"
-                 "u.d\n"
-                 "---\n")
-        gap   = ("--D\n"
-                 "u.-\n"
-                 "--l\n")
+        # Create two boards, both of which form a nand loop
         self.boards = [
-                    Board.deserialize(nogap),
-                    Board.deserialize(gap),
+                    # Directly output to simnode
+                    Board.deserialize("--D\n"
+                                      "u.d\n"
+                                      "---\n"),
+                    # Output via wire
+                    Board.deserialize("--D\n"
+                                      "u.-\n"
+                                      "--l\n")
                 ]
         # Keep track of the leftmost nand on both grids.
         # They should both always have the same value.
-        self.nands = list(map(lambda x: x.get((0,1)), self.boards))
+        self.nands = list(map(lambda x: x.get((0, 1)), self.boards))
 
     def testOutputToSimNodes(self):
         """
@@ -182,6 +197,7 @@ class DirectSimNodeOutputClockTest(unittest.TestCase):
             self.assertEqual(self.nands[0].output(), self.nands[1].output())
             self.boards[0].tick()
             self.boards[1].tick()
+
 
 if __name__ == '__main__':
     unittest.main()

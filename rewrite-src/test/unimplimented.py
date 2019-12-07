@@ -1,6 +1,6 @@
-import logging
 import unittest
-from shortcircuit import Board, Switch, Nand, Wire
+from shortcircuit import Board
+
 
 class BridgeTest(unittest.TestCase):
     """Wires will need to cross each other!"""
@@ -11,9 +11,9 @@ class BridgeTest(unittest.TestCase):
                      "-r-|--\n"
                      "...-..\n")
         self.board = Board.deserialize(board_str)
-        self.top_nand = self.board.get((3,0))
-        self.right_wire = self.board.get((5,2))
-        self.bridge = self.board.get((3,2))
+        self.top_nand = self.board.get((3, 0))
+        self.right_wire = self.board.get((5, 2))
+        self.bridge = self.board.get((3, 2))
 
         self.board.tick()
         self.board.tick()
@@ -28,8 +28,10 @@ class BridgeTest(unittest.TestCase):
         self.assertTrue(self.top_nand.output())
 
     # def testBridgeHasNoOutput(self):
-    #     """It makes no sense to ask the bridge what its output is... It has two signals."""
+    #     """It makes no sense to ask the bridge what its output is... It has
+    #     two signals."""
     #     self.assertIsNone(self.bridge.output())
+
 
 if __name__ == '__main__':
     unittest.main()
