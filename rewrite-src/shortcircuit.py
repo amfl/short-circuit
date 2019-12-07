@@ -198,14 +198,14 @@ class Board:
 
         # self._grid_neighbour_io_refresh(coords)
 
+        # Update the contents of the board with the new object
+        x, y = coords
+        self.grid[y][x] = node
+
         if isinstance(node, Wire):
             self._grid_local_wire_join(coords, node)
         else:
             self._grid_local_wire_break(coords, node)
-
-        # Update the contents of the board with the new object
-        x, y = coords
-        self.grid[y][x] = node
 
     @classmethod
     def deserialize(cls, string):
@@ -292,10 +292,28 @@ class Board:
         # Unioning N sets is ugly in python
         sets = [w.inputs for w in neighbouring_wires]
         try:
-            new_inputs = sets[0].union(*sets[1:])
+            new_wire.inputs = sets[0].union(*sets[1:])
         except IndexError:
             # It's possible there is no sets[0]
-            new_inputs = set()
+            new_wire.inputs = set()
+
+        # TODO Replace this with cache lookups: wire group -> [coord]
+        def _recursive_replace_wire(old_wire_coords, new_wire):
+            old_node = self.get(old_wire_coords)
+            if not isinstance(old_node, Wire):
+                return
+
+            # Replace the current wire
+            x, y = old_wire_coords
+            self.grid[y][x] = new_wire
+
+            # In the list of all wire neighbours which aren't the new wire...
+            for nc in self.neighbour_coords(old_wire_coords):
+                nn = self.get(nc)
+                if isinstance(nn, Wire) and nn != new_wire:
+                    # Replace them, too!
+                    _recursive_replace_wire(nc, new_wire)
+        _recursive_replace_wire(coords, new_wire)
 
         return new_wire
 
