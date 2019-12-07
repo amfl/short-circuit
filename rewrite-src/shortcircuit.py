@@ -195,12 +195,17 @@ class Board:
 
     def set(self, coords, node: SimNode):
         """Places a SimNode on the board. This also performs any wire joining and IO updates."""
-        if isinstance(node, Wire):
-            self._grid_wire_join(coords, node)
-        else:
-            self._grid_wire_break(coords, node)
 
-        self._grid_neighbour_io_refresh(coords)
+        # self._grid_neighbour_io_refresh(coords)
+
+        if isinstance(node, Wire):
+            self._grid_local_wire_join(coords, node)
+        else:
+            self._grid_local_wire_break(coords, node)
+
+        # Update the contents of the board with the new object
+        x, y = coords
+        self.grid[y][x] = node
 
     @classmethod
     def deserialize(cls, string):
@@ -246,6 +251,10 @@ class Board:
     def neighbour_deltas(cls):
         return [(0,-1), (1,0), (0,1), (-1,0)]
 
+    @classmethod
+    def neighbours(cls, coords):
+        return [add(coords, x) for x in cls.neighbour_deltas()]
+
     #####################################################
     # Internal use methods
     #####################################################
@@ -264,11 +273,29 @@ class Board:
                     nodes.add((x, y, me))
         return (wires, nodes)
 
-    def _grid_local_wire_join(self, coords, node: SimNode):
-        """Join multiple wires into one if required"""
-        # neighbouring_wires = filter(lambda x: isinstance(x, Wire), neighbours(coords))
-        # new_wire = union_wires(neighbouring_wires + [node])
-        pass
+    def _grid_local_wire_join(self, coords, new_wire: Wire):
+        """Ensures all wires in the wire group at the given coords consist of
+        the same object, and that inputs/outputs are correct.
+        
+        Parameters
+        ----------
+        coords : tuple
+            A tuple of grid coordinates to join at.
+        new_wire : Wire
+            The new wire to replace the entire group with.
+        """
+        neighbouring_simnodes = [self.get(c) for c in self.neighbours(coords)]
+        neighbouring_wires = [sn for sn in neighbouring_simnodes if isinstance(sn, Wire)]
+
+        # Unioning N sets is ugly in python
+        sets = [w.inputs for w in neighbouring_wires]
+        try:
+            new_inputs = sets[0].union(*sets[1:])
+        except IndexError:
+            # It's possible there is no sets[0]
+            new_inputs = set()
+
+        return new_wire
 
     def _grid_local_wire_break(self, coords):
         """Break a wire into multiple bits if required"""
