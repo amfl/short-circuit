@@ -252,8 +252,11 @@ class Board:
         return [(0,-1), (1,0), (0,1), (-1,0)]
 
     @classmethod
-    def neighbours(cls, coords):
+    def neighbour_coords(cls, coords):
         return [add(coords, x) for x in cls.neighbour_deltas()]
+
+    def neighbour_objs(self, coords):
+        return [self.get(c) for c in self.neighbour_coords(coords)]
 
     #####################################################
     # Internal use methods
@@ -276,7 +279,7 @@ class Board:
     def _grid_local_wire_join(self, coords, new_wire: Wire):
         """Ensures all wires in the wire group at the given coords consist of
         the same object, and that inputs/outputs are correct.
-        
+
         Parameters
         ----------
         coords : tuple
@@ -284,8 +287,7 @@ class Board:
         new_wire : Wire
             The new wire to replace the entire group with.
         """
-        neighbouring_simnodes = [self.get(c) for c in self.neighbours(coords)]
-        neighbouring_wires = [sn for sn in neighbouring_simnodes if isinstance(sn, Wire)]
+        neighbouring_wires = [sn for sn in self.neighbour_objs(coords) if isinstance(sn, Wire)]
 
         # Unioning N sets is ugly in python
         sets = [w.inputs for w in neighbouring_wires]
