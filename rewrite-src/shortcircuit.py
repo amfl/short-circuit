@@ -289,10 +289,12 @@ class Board:
         """
         neighbouring_wires = [sn for sn in self.neighbour_objs(coords) if isinstance(sn, Wire)]
 
+        new_wire.signal = any([w.output() for w in neighbouring_wires])
+
         # Unioning N sets is ugly in python
-        sets = [w.inputs for w in neighbouring_wires]
+        old_input_sets = [w.inputs for w in neighbouring_wires]
         try:
-            new_wire.inputs = sets[0].union(*sets[1:])
+            new_wire.inputs = old_input_sets[0].union(*old_input_sets[1:])
         except IndexError:
             # It's possible there is no sets[0]
             new_wire.inputs = set()
