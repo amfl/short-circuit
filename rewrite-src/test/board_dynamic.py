@@ -15,9 +15,13 @@ class TestWireJoin(unittest.TestCase):
         self.placed_wire = self.board.get((3,0))
 
     def testSetPlacesWire(self):
+        """Passing a wire object should result in a wire object being placed at
+        the given coordinates."""
         self.assertIsInstance(self.placed_wire, Wire)
 
     def testSetPlacesPassedWire(self):
+        """The wire which appears on the grid must be the same wire which was
+        actually given to the `set` method."""
         self.assertIs(self.new_wire, self.placed_wire)
 
     def testJoinedWiresAreSameObject(self):
