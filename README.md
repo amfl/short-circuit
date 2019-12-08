@@ -5,8 +5,8 @@
         <img src="https://img.shields.io/docker/cloud/automated/amfl/short-circuit" /></a>
 </p>
 
-Short Circuit is a **tile-based digital logic sandbox** inspired by [Wireworld][wireworld]
-and [Minecraft's Redstone][redstone].
+Short Circuit is a **tile-based digital logic sandbox** inspired by
+[Wireworld][wireworld] and [Minecraft's Redstone][redstone].
 
 It is in **pre-alpha**. Expect nothing to work!
 
@@ -30,8 +30,23 @@ It is in **pre-alpha**. Expect nothing to work!
 
 ## Testing
 
-To run tests, use:
+Tests are written with the [`unittest` module][python-unittest] from the
+Standard Python Library.
+
+To run tests, you can simply run the test file that you are interested in:
 
 ```bash
-python3 ./src/test.py
+export PYTHONPATH=${PYTHONPATH}:./rewrite-src
+python3 ./rewrite-src/test/FILE_HERE.py
 ```
+
+Or you can use [`pytest`][pytest-unittest] to call them all at once:
+
+```bash
+export PYTHONPATH=${PYTHONPATH}:./rewrite-src
+pip install pytest
+pytest rewrite-src/test/*
+```
+
+[python-unittest]: https://docs.python.org/3/library/unittest.html#module-unittest
+[pytest-unittest]: https://docs.pytest.org/en/latest/unittest.html
