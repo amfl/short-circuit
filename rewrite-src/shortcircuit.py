@@ -333,7 +333,7 @@ class Board:
 
         return new_wire
 
-    def _grid_local_wire_break(self, coords):
+    def _grid_local_wire_break(self, coords, new_node: SimNode):
         """Break a wire into multiple bits if required"""
         pass
 
