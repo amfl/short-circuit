@@ -216,7 +216,7 @@ class Board:
         if isinstance(node, Wire):
             self._grid_local_wire_join(coords, node)
         else:
-            self._grid_local_wire_break(coords, node)
+            self._grid_local_wire_break(coords, old_node)
 
         # Make sure all neighbours have their connections updated
         self._grid_local_io_refresh(coords)
@@ -343,23 +343,50 @@ class Board:
 
         return new_wire
 
-    def _grid_local_wire_break(self, coords, new_node: SimNode):
+    def _grid_local_wire_break(self, coords, broken_wire: Wire):
         """Break a wire into multiple bits if required"""
-        pass
 
-        # Note: probably doesn't need new_node arg
+        assert(self.get(coords) is None)
+
+        def recursive_wire_flood(old_wire_coords, new_wire):
+            logging.debug(f'Performing recursive wire flood at: {old_wire_coords}')
+            # Replace the current wire
+            try:
+                self.set_basic(old_wire_coords, new_wire)
+            except IndexError:
+                return {}
+
+            dirty_simnodes = {}
+
+            # In the list of all wire neighbours which aren't the new wire...
+            for nc in self.neighbour_coords(old_wire_coords):
+                n = self.get(nc)
+                if isinstance(n, Wire) and n != new_wire:
+                    # Replace them, too!
+                    dirty_simnodes.update(
+                            recursive_wire_flood(nc, new_wire))
+                elif n is not None:
+                    dirty_simnodes[nc] = n
+            return dirty_simnodes
+
         # Note: This can work even if there are no wires... Just marks all the
         #       neighbours as dirty.
         # PSEUDOCODE
-        # newly_created_wire = set()
-        # dirty_simnodes = {}
-        # for each neighbour:
-        #   if this is wire and is not in set of newly created wire:
-        #     new_wire = Wire()
-        #     flood fill across existing wire.
-        #       dirty_simnodes[discovered_simnode] = coords
-        #       replace old wire with new wire as you go
+        newly_created_wire = set()
+        dirty_simnodes = {}  # coord -> obj
+        for nc in self.neighbour_coords(coords):
+            # Use coords to avoid mutating what we are iterating over
+            n = self.get(nc)
+            if n is broken_wire:
+                new_wire = Wire()
+                dirty_simnodes.update(
+                        recursive_wire_flood(nc, new_wire))
+            elif n is not None:
+                dirty_simnodes[nc] = n
+
         # Update IO for all dirty_simnodes
+        for coord, _ in dirty_simnodes.items():
+            self._grid_local_io_refresh(coord)
 
     def _grid_local_io_refresh(self, coords):
         # Update neighbours
