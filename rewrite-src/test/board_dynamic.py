@@ -81,6 +81,47 @@ class TestWireBreak(unittest.TestCase):
         self.assertFalse(orphaned_wire.output())
 
 
+class TestWireBreakAdvanced(unittest.TestCase):
+    def setUp(self):
+        board_str = ("r-...-l\n"
+                     "r-----l\n"
+                     "l-...-r\n")
+        self.board = Board.deserialize(board_str)
+        self.center_coords = (3, 1)
+
+        self.left_input_nands = {self.board.get((0, 0)),
+                                 self.board.get((0, 1))}
+        self.left_output_nand = self.board.get((0, 2))
+
+        self.right_input_nands = {self.board.get((6, 0)),
+                                  self.board.get((6, 1))}
+        self.right_output_nand = self.board.get((6, 2))
+
+    def testBasicAssumptions(self):
+        center_wire = self.board.get(self.center_coords)
+        self.assertIsInstance(center_wire, Wire)
+        self.assertEqual(len(center_wire.inputs), 4)
+
+        self.assertEqual(self.left_output_nand.inputs, {center_wire})
+        self.assertEqual(self.right_output_nand.inputs, {center_wire})
+
+    def testWireBreakInputs(self):
+        self.board.set(self.center_coords, None)
+
+        left_wire = self.board.get((2, 1))
+        right_wire = self.board.get((4, 1))
+        self.assertEqual(left_wire.inputs, self.left_input_nands)
+        self.assertEqual(right_wire.inputs, self.right_input_nands)
+
+    def testWireBreakOutputs(self):
+        self.board.set(self.center_coords, None)
+
+        left_wire = self.board.get((2, 1))
+        right_wire = self.board.get((4, 1))
+        self.assertEqual(self.left_output_nand.inputs, {left_wire})
+        self.assertEqual(self.right_output_nand.inputs, {right_wire})
+
+
 class TestComponentReplacement(unittest.TestCase):
     """Make sure that joining two wire groups via deleting a component doesn't
     leave incorrect IO information around."""

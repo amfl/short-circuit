@@ -199,5 +199,16 @@ class DirectSimNodeOutputClockTest(unittest.TestCase):
             self.boards[1].tick()
 
 
+class NandDirectionalInputTest(unittest.TestCase):
+    """NANDs are directional and shouldn't connect in this situation"""
+
+    def setUp(self):
+        self.board = Board.deserialize("dd\n")
+        self.nand = self.board.get((0, 0))
+
+    def testInputs(self):
+        self.assertEqual(self.nand.inputs, set())
+
+
 if __name__ == '__main__':
     unittest.main()
