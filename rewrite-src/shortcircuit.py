@@ -347,6 +347,20 @@ class Board:
         """Break a wire into multiple bits if required"""
         pass
 
+        # Note: probably doesn't need new_node arg
+        # Note: This can work even if there are no wires... Just marks all the
+        #       neighbours as dirty.
+        # PSEUDOCODE
+        # newly_created_wire = set()
+        # dirty_simnodes = {}
+        # for each neighbour:
+        #   if this is wire and is not in set of newly created wire:
+        #     new_wire = Wire()
+        #     flood fill across existing wire.
+        #       dirty_simnodes[discovered_simnode] = coords
+        #       replace old wire with new wire as you go
+        # Update IO for all dirty_simnodes
+
     def _grid_local_io_refresh(self, coords):
         # Update neighbours
         neighbour_coords = self.neighbour_coords(coords)
