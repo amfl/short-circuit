@@ -97,8 +97,7 @@ class TestComponentReplacement(unittest.TestCase):
 
     def testIO(self):
         final_wire = self.board.get((4, 0))
-        self.assertEqual(len(final_wire.inputs), 1)
-        self.assertIs(list(final_wire.inputs)[0], self.nand)
+        self.assertEqual(final_wire.inputs, {self.nand})
 
 
 if __name__ == '__main__':
