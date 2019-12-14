@@ -349,7 +349,6 @@ class Board:
         assert(self.get(coords) is None)
 
         def recursive_wire_flood(old_wire_coords, new_wire):
-            logging.debug(f'Performing recursive wire flood at: {old_wire_coords}')
             # Replace the current wire
             try:
                 self.set_basic(old_wire_coords, new_wire)
@@ -372,7 +371,7 @@ class Board:
         # Note: This can work even if there are no wires... Just marks all the
         #       neighbours as dirty.
         # PSEUDOCODE
-        newly_created_wire = set()
+        new_wires = set()
         dirty_simnodes = {}  # coord -> obj
         for nc in self.neighbour_coords(coords):
             # Use coords to avoid mutating what we are iterating over
@@ -381,12 +380,19 @@ class Board:
                 new_wire = Wire()
                 dirty_simnodes.update(
                         recursive_wire_flood(nc, new_wire))
+                # Update this later - Can't do here because we need to wait for
+                # dirty simnodes to refresh
+                new_wires.add(new_wire)
             elif n is not None:
                 dirty_simnodes[nc] = n
 
         # Update IO for all dirty_simnodes
         for coord, _ in dirty_simnodes.items():
             self._grid_local_io_refresh(coord)
+        # Make sure the new wires immediately show the correct value
+        for wire in new_wires:
+            wire.calculate_next_output()
+            wire.tick()
 
     def _grid_local_io_refresh(self, coords):
         # Update neighbours
