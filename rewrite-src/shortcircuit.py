@@ -209,16 +209,21 @@ class Board:
         """Places a SimNode on the board. This also performs any wire joining
         and IO updates."""
 
-        # self._grid_neighbour_io_refresh(coords)
+        old_node = self.get(coords)
 
         # Update the contents of the board with the new object
         x, y = coords
         self.grid[y][x] = node
 
+        # Break any wires we need to
         if isinstance(node, Wire):
             self._grid_local_wire_join(coords, node)
         else:
             self._grid_local_wire_break(coords, node)
+
+        # Make sure all neighbours have their connections updated
+        self._grid_local_io_refresh(coords)
+
 
     @classmethod
     def deserialize(cls, string):
@@ -338,7 +343,14 @@ class Board:
         pass
 
     def _grid_local_io_refresh(self, coords):
-        pass
+        # Update neighbours
+        neighbour_coords = self.neighbour_coords(coords)
+        for nc in neighbour_coords:
+            n = self.get(coords)
+            try:
+                n.recalculate_io(coords, self)
+            except:
+                pass
 
     def _grid_global_wire_join(self):
         """Globally reevaluates the grid and performs low-level wire joins.

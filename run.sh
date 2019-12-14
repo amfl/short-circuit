@@ -21,7 +21,9 @@ docker run --rm -it \
     -u "$(id -u):$(id -g)" \
     -v "${OUTDIR}:/proj/output" \
     -v "$(pwd)/src:/proj/src:ro" \
+    -v "$(pwd)/rewrite-src:/proj/rewrite-src:ro" \
     -e "TERM=${TERM}" \
     -e "REVISION=${REVISION}" \
     short-circuit:latest \
-    python /proj/src/main.py $@
+    sh
+    # python /proj/src/main.py $@
