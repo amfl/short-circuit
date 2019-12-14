@@ -221,14 +221,12 @@ class Board:
         # Make sure all neighbours have their connections updated
         self._grid_local_io_refresh(coords)
 
-
     def set_basic(self, coords, node: SimNode):
         # Update the contents of the board with the new object
         x, y = coords
         if x < 0 or y < 0:
             raise IndexError
         self.grid[y][x] = node
-
 
     @classmethod
     def deserialize(cls, string):
