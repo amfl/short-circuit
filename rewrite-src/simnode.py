@@ -82,7 +82,7 @@ class Nand(SimNode):
 
         # TODO BUG - Doesn't take into account directionality of inputs
         self.inputs = set(filter(None,
-                            [board.get(nc) for nc in neighbour_coords]))
+                                 [board.get(nc) for nc in neighbour_coords]))
 
         # Attempt to notify the output space (Not all nodes have inputs, or
         # there may be nothing there)

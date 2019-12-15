@@ -1,5 +1,5 @@
-from simnode import *
-from util import *
+from simnode import SimNode, Wire, Nand, Switch
+import util
 import logging
 logger = logging.getLogger()
 logname = 'output/gameplay.log'
@@ -141,12 +141,12 @@ class Board:
 
     @classmethod
     def neighbour_coords(cls, coords):
-        return [add(coords, x) for x in cls.neighbour_deltas()]
+        return [util.add(coords, x) for x in cls.neighbour_deltas()]
 
     def neighbour_objs(self, coords):
         """Returns the neighbouring nodes (No `None`s)"""
-        return list(filter(None,
-            [self.get(c) for c in self.neighbour_coords(coords)]))
+        n_objs = [self.get(c) for c in self.neighbour_coords(coords)]
+        return list(filter(None, n_objs))
 
     #####################################################
     # Internal use methods
@@ -237,7 +237,6 @@ class Board:
 
         # Note: This can work even if there are no wires... Just marks all the
         #       neighbours as dirty.
-        # PSEUDOCODE
         new_wires = set()
         dirty_simnodes = {}  # coord -> obj
         for nc in self.neighbour_coords(coords):
@@ -266,10 +265,8 @@ class Board:
         neighbour_coords = self.neighbour_coords(coords)
         for nc in neighbour_coords:
             n = self.get(coords)
-            try:
+            if n is not None:
                 n.recalculate_io(coords, self)
-            except:
-                pass
 
     def _grid_global_wire_join(self):
         """Globally reevaluates the grid and performs low-level wire joins.
