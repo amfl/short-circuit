@@ -138,7 +138,9 @@ class Board:
         return [add(coords, x) for x in cls.neighbour_deltas()]
 
     def neighbour_objs(self, coords):
-        return [self.get(c) for c in self.neighbour_coords(coords)]
+        """Returns the neighbouring nodes (No `None`s)"""
+        return list(filter(None,
+            [self.get(c) for c in self.neighbour_coords(coords)]))
 
     #####################################################
     # Internal use methods

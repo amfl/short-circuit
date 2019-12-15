@@ -65,14 +65,15 @@ class Nand(SimNode):
         self.facing = 0
 
     def recalculate_io(self, my_coord, board):
-        neighbour_nodes = board.neighbour_objs(my_coord)
+        neighbour_coords = board.neighbour_coords(my_coord)
 
         # Here we split the neighbours into inputs and outputs
-        output = neighbour_nodes.pop(self.facing)
+        output_coords = neighbour_coords.pop(self.facing)
+        output = board.get(output_coords)
 
-        self.inputs = set(filter(
-            lambda x: isinstance(x, SimNode),
-            neighbour_nodes))
+        # TODO BUG - Doesn't take into account directionality of inputs
+        self.inputs = set(filter(None,
+                            [board.get(nc) for nc in neighbour_coords]))
 
         # Attempt to notify the output space (Not all nodes have inputs, or
         # there may be nothing there)
