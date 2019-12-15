@@ -73,6 +73,12 @@ class Board:
         old_node = self.get(coords)
         self.set_basic(coords, node)
 
+        if old_node is not None:
+            # We need to delete the old node first!
+            # Clear it out of our neighbour's inputs.
+            for n in self.neighbour_objs(coords):
+                n.remove_input(old_node)
+
         # Break any wires we need to
         if isinstance(node, Wire):
             self._grid_local_wire_join(coords, node)

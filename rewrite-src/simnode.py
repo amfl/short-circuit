@@ -17,6 +17,9 @@ class SimNode:
         neighbours inputs."""
         pass
 
+    def remove_input(self, node):
+        pass
+
 
 class Wire(SimNode):
     serialized_glyphs = ['-']
@@ -53,6 +56,12 @@ class Wire(SimNode):
 
     def output(self):
         return self.signal
+
+    def remove_input(self, node: SimNode):
+        try:
+            self.inputs.remove(node)
+        except KeyError:
+            pass
 
 
 class Nand(SimNode):
@@ -106,6 +115,12 @@ class Nand(SimNode):
 
     def tick(self):
         self.signal = self.new_signal
+
+    def remove_input(self, node: SimNode):
+        try:
+            self.inputs.remove(node)
+        except KeyError:
+            pass
 
 
 class Switch(SimNode):
