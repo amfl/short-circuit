@@ -77,7 +77,7 @@ class Board:
             # We need to delete the old node first!
             # Clear it out of our neighbour's inputs.
             for n in self.neighbour_objs(coords):
-                n.remove_input(old_node)
+                n.input_remove(old_node)
 
         # Break any wires we need to
         if isinstance(node, Wire):
@@ -135,17 +135,9 @@ class Board:
     # Convenience methods
     #####################################################
 
-    @classmethod
-    def neighbour_deltas(cls):
-        return [(0, -1), (1, 0), (0, 1), (-1, 0)]
-
-    @classmethod
-    def neighbour_coords(cls, coords):
-        return [util.add(coords, x) for x in cls.neighbour_deltas()]
-
     def neighbour_objs(self, coords):
         """Returns the neighbouring nodes (No `None`s)"""
-        n_objs = [self.get(c) for c in self.neighbour_coords(coords)]
+        n_objs = [self.get(c) for c in util.neighbour_coords(coords)]
         return list(filter(None, n_objs))
 
     #####################################################
@@ -201,7 +193,7 @@ class Board:
             self.grid[y][x] = new_wire
 
             # In the list of all wire neighbours which aren't the new wire...
-            for nc in self.neighbour_coords(old_wire_coords):
+            for nc in util.neighbour_coords(old_wire_coords):
                 nn = self.get(nc)
                 if isinstance(nn, Wire) and nn != new_wire:
                     # Replace them, too!
@@ -225,7 +217,7 @@ class Board:
             dirty_simnodes = {}
 
             # In the list of all wire neighbours which aren't the new wire...
-            for nc in self.neighbour_coords(old_wire_coords):
+            for nc in util.neighbour_coords(old_wire_coords):
                 n = self.get(nc)
                 if isinstance(n, Wire) and n != new_wire:
                     # Replace them, too!
@@ -239,7 +231,7 @@ class Board:
         #       neighbours as dirty.
         new_wires = set()
         dirty_simnodes = {}  # coord -> obj
-        for nc in self.neighbour_coords(coords):
+        for nc in util.neighbour_coords(coords):
             # Use coords to avoid mutating what we are iterating over
             n = self.get(nc)
             if n is broken_wire:
@@ -262,7 +254,7 @@ class Board:
 
     def _grid_local_io_refresh(self, coords):
         # Update neighbours
-        neighbour_coords = self.neighbour_coords(coords)
+        neighbour_coords = util.neighbour_coords(coords)
         for nc in neighbour_coords:
             n = self.get(coords)
             if n is not None:

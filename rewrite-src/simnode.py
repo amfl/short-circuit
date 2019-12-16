@@ -1,3 +1,4 @@
+import util
 import logging
 logger = logging.getLogger()
 
@@ -17,8 +18,27 @@ class SimNode:
         neighbours inputs."""
         pass
 
-    def remove_input(self, node):
+    def input_remove(self, node):
         pass
+
+    def input_add(self, node, coord_delta):
+        """Adds another node to my inputs if possible.
+
+        Sometimes directionality is important when joining, so SimNodes must be
+        able to define their connection strategies via this method.
+
+        Arguments:
+            node (SimNode): The new node to be added
+            coord_delta: Coord difference between the two nodes
+
+        Returns:
+            bool: True if the node was added, False otherwise.
+        """
+        return False
+
+    def outputs_to(self, coord_delta):
+        """Whether this node can output in the given direction"""
+        return True
 
 
 class Wire(SimNode):
@@ -57,11 +77,14 @@ class Wire(SimNode):
     def output(self):
         return self.signal
 
-    def remove_input(self, node: SimNode):
+    def input_remove(self, node: SimNode):
         try:
             self.inputs.remove(node)
         except KeyError:
             pass
+
+    def input_add(self, node: SimNode, coord_delta):
+        self.inputs.add(node)
 
 
 class Nand(SimNode):
@@ -74,22 +97,20 @@ class Nand(SimNode):
         self.facing = 0
 
     def recalculate_io(self, my_coord, board):
-        neighbour_coords = board.neighbour_coords(my_coord)
+        # Reset inputs as empty, then slowly repopulate
+        self.inputs = set()
+        deltas = util.neighbour_deltas()
 
-        # Here we split the neighbours into inputs and outputs
-        output_coords = neighbour_coords.pop(self.facing)
-        output = board.get(output_coords)
+        for i, delta in enumerate(deltas):
+            nc = util.add(delta, my_coord)
+            n = board.get(nc)
 
-        # TODO BUG - Doesn't take into account directionality of inputs
-        self.inputs = set(filter(None,
-                                 [board.get(nc) for nc in neighbour_coords]))
-
-        # Attempt to notify the output space (Not all nodes have inputs, or
-        # there may be nothing there)
-        try:
-            output.inputs.add(self)
-        except AttributeError:
-            pass
+            if n is not None:
+                if i == self.facing:
+                    n.input_add(self, util.invert(delta))
+                else:
+                    if n.outputs_to(util.invert(delta)):
+                        self.inputs.add(n)
 
     @classmethod
     def deserialize(cls, glyph):
@@ -116,11 +137,22 @@ class Nand(SimNode):
     def tick(self):
         self.signal = self.new_signal
 
-    def remove_input(self, node: SimNode):
+    def input_remove(self, node: SimNode):
         try:
             self.inputs.remove(node)
         except KeyError:
             pass
+
+    def input_add(self, node: SimNode, coord_delta):
+        # Don't try and add inputs if they are located on your output side!
+        if not self.outputs_to(coord_delta):
+            self.inputs.add(node)
+            return True
+
+        return False
+
+    def outputs_to(self, coord_delta):
+        return util.neighbour_deltas()[self.facing] == coord_delta
 
 
 class Switch(SimNode):
