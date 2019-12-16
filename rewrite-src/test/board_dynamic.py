@@ -141,5 +141,33 @@ class TestComponentReplacement(unittest.TestCase):
         self.assertEqual(final_wire.inputs, {self.nand})
 
 
+class TestNandRotation(unittest.TestCase):
+    """NANDs are directional. Rotating them needs to update connections."""
+    def setUp(self):
+        self.board = Board.deserialize("R--\n"
+                                       "-..\n")
+        self.nand = self.board.get((0, 0))
+        self.bottom_wire = self.board.get((0, 1))
+        self.right_wire = self.board.get((2, 0))
+
+        self.nand.rotate_facing(1, (0, 0), self.board)
+
+    def testFacing(self):
+        self.assertEqual(self.nand.serialize(), 'D')
+
+    def testIO(self):
+        self.assertEqual(self.right_wire.inputs, set())
+        self.assertEqual(self.nand.inputs, {self.right_wire})
+        self.assertEqual(self.bottom_wire.inputs, {self.nand})
+
+    def testE2E(self):
+        """The outputs should be accurate after a tick.
+
+        I am undecided as to what the behavior should be without a tick..."""
+        self.board.tick()
+        self.assertFalse(self.right_wire.output())
+        self.assertTrue(self.bottom_wire.output())
+
+
 if __name__ == '__main__':
     unittest.main()

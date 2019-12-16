@@ -154,6 +154,16 @@ class Nand(SimNode):
     def outputs_to(self, coord_delta):
         return util.neighbour_deltas()[self.facing] == coord_delta
 
+    def rotate_facing(self, delta: int, my_coords, board):
+        self.facing = (self.facing + delta) % 4
+
+        # TODO Something like one of these...
+
+        # board.set(my_coords, None)
+        # board.set(my_coords, self)
+
+        # self.recalculate_io(my_coords, board)
+
 
 class Switch(SimNode):
     serialized_glyphs = ['x', 'o']
