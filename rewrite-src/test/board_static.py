@@ -1,5 +1,8 @@
 import unittest
+import logging
 from shortcircuit import Board, Switch, Nand, Wire
+
+logger = logging.getLogger()
 
 
 class TestTest(unittest.TestCase):
@@ -153,7 +156,7 @@ class DirectSimNodeOutputTest(unittest.TestCase):
 
     def testTick(self):
         for i in range(5):
-            print(self.board.serialize())
+            logger.debug(self.board.serialize())
             self.assertEqual(self.left_nands[1].output(),
                              self.middle_wire.output())
 
@@ -191,9 +194,9 @@ class DirectSimNodeOutputClockTest(unittest.TestCase):
         stuff in between.
         """
         for i in range(10):
-            print(f'==={i}===')
-            print(self.boards[0].serialize())
-            print(self.boards[1].serialize())
+            logger.debug(f'==={i}===')
+            logger.debug(self.boards[0].serialize())
+            logger.debug(self.boards[1].serialize())
             self.assertEqual(self.nands[0].output(), self.nands[1].output())
             self.boards[0].tick()
             self.boards[1].tick()

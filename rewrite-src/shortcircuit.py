@@ -2,13 +2,6 @@ from simnode import SimNode, Wire, Nand, Switch
 import util
 import logging
 logger = logging.getLogger()
-logname = 'output/gameplay.log'
-logging.basicConfig(filename=logname,
-                    filemode='a',
-                    format=('%(asctime)s,%(msecs)d %(module)s '
-                            '%(levelno)s %(message)s'),
-                    datefmt='%H:%M:%S',
-                    level=logging.DEBUG)
 
 
 class Board:
