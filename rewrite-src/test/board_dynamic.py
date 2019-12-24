@@ -161,9 +161,11 @@ class TestNandRotation(unittest.TestCase):
         self.assertEqual(self.bottom_wire.inputs, {self.nand})
 
     def testE2E(self):
-        """The outputs should be accurate after a tick.
+        """The outputs should be accurate after a few ticks.
 
-        I am undecided as to what the behavior should be without a tick..."""
+        I am undecided as to what the behavior should be after zero or one
+        ticks..."""
+        self.board.tick()
         self.board.tick()
         self.assertFalse(self.right_wire.output())
         self.assertTrue(self.bottom_wire.output())
