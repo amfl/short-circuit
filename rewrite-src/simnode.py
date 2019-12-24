@@ -99,6 +99,10 @@ class Nand(SimNode):
     def recalculate_io(self, my_coord, board):
         # Reset inputs as empty, then slowly repopulate
         self.inputs = set()
+        # Need to keep track of outputs so we don't immediately remove
+        # ourselves again if many neighbour tiles are the same input AND
+        # output object (eg, in the case of a simple 1-tick nand clock)
+        outputs = set()
         deltas = util.neighbour_deltas()
 
         for i, delta in enumerate(deltas):
@@ -108,7 +112,10 @@ class Nand(SimNode):
             if n is not None:
                 if i == self.facing:
                     n.input_add(self, util.invert(delta))
+                    outputs.add(n)
                 else:
+                    if n not in outputs:
+                        n.input_remove(self)
                     if n.outputs_to(util.invert(delta)):
                         self.inputs.add(n)
 
@@ -157,12 +164,7 @@ class Nand(SimNode):
     def rotate_facing(self, delta: int, my_coords, board):
         self.facing = (self.facing + delta) % 4
 
-        # TODO Something like one of these...
-
-        # board.set(my_coords, None)
-        # board.set(my_coords, self)
-
-        # self.recalculate_io(my_coords, board)
+        self.recalculate_io(my_coords, board)
 
 
 class Switch(SimNode):
