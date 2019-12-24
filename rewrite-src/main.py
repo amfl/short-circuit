@@ -1,5 +1,6 @@
 import argparse
 from shortcircuit import Board
+from tui import TermUI
 
 import logging
 logger = logging.getLogger()
@@ -46,9 +47,9 @@ def main():
         board.initialize_grid((args.width, args.height))
 
     # # Start up the UI
-    # t = TermUI(args, g)
-    # # Block until we quit the UI
-    # t.start()
+    t = TermUI(args, board)
+    # Block until we quit the UI
+    t.start()
 
 
 if __name__ == '__main__':
