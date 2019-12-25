@@ -151,6 +151,35 @@ class Board:
                     nodes.add((x, y, me))
         return (wires, nodes)
 
+    def _recursive_wire_replace(self, old_wire_coords, new_wire):
+        """Recursively flood through a wire and replace it with a new
+        wire.
+
+        TODO: How does caching fit into this?
+
+        Returns : set
+          Set of all the SimNodes which will need to have their IO updated.
+
+        """
+        # Replace the current wire
+        try:
+            self.set_basic(old_wire_coords, new_wire)
+        except IndexError:
+            return {}
+
+        dirty_simnodes = {}
+
+        # In the list of all wire neighbours which aren't the new wire...
+        for nc in util.neighbour_coords(old_wire_coords):
+            n = self.get(nc)
+            if isinstance(n, Wire) and n != new_wire:
+                # Replace them, too!
+                dirty_simnodes.update(
+                        self._recursive_wire_replace(nc, new_wire))
+            elif n is not None:
+                dirty_simnodes[nc] = n
+        return dirty_simnodes
+
     def _grid_local_wire_join(self, coords, new_wire: Wire):
         """Ensures all wires in the wire group at the given coords consist of
         the same object, and that inputs/outputs are correct.
@@ -175,23 +204,7 @@ class Board:
             # It's possible there is no sets[0]
             new_wire.inputs = set()
 
-        # TODO Replace this with cache lookups: wire group -> [coord]
-        def _recursive_replace_wire(old_wire_coords, new_wire):
-            old_node = self.get(old_wire_coords)
-            if not isinstance(old_node, Wire):
-                return
-
-            # Replace the current wire
-            x, y = old_wire_coords
-            self.grid[y][x] = new_wire
-
-            # In the list of all wire neighbours which aren't the new wire...
-            for nc in util.neighbour_coords(old_wire_coords):
-                nn = self.get(nc)
-                if isinstance(nn, Wire) and nn != new_wire:
-                    # Replace them, too!
-                    _recursive_replace_wire(nc, new_wire)
-        _recursive_replace_wire(coords, new_wire)
+        self._recursive_wire_replace(coords, new_wire)
 
         return new_wire
 
@@ -210,26 +223,6 @@ class Board:
         current_obj = self.get(coords)
         assert(not isinstance(current_obj, Wire))
 
-        def recursive_wire_flood(old_wire_coords, new_wire):
-            # Replace the current wire
-            try:
-                self.set_basic(old_wire_coords, new_wire)
-            except IndexError:
-                return {}
-
-            dirty_simnodes = {}
-
-            # In the list of all wire neighbours which aren't the new wire...
-            for nc in util.neighbour_coords(old_wire_coords):
-                n = self.get(nc)
-                if isinstance(n, Wire) and n != new_wire:
-                    # Replace them, too!
-                    dirty_simnodes.update(
-                            recursive_wire_flood(nc, new_wire))
-                elif n is not None:
-                    dirty_simnodes[nc] = n
-            return dirty_simnodes
-
         # Note: This can work even if there are no wires... Just marks all the
         #       neighbours as dirty.
         new_wires = set()
@@ -240,7 +233,7 @@ class Board:
             if n is broken_wire:
                 new_wire = Wire()
                 dirty_simnodes.update(
-                        recursive_wire_flood(nc, new_wire))
+                        self._recursive_wire_replace(nc, new_wire))
                 # Update this later - Can't do here because we need to wait for
                 # dirty simnodes to refresh
                 new_wires.add(new_wire)
