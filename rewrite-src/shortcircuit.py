@@ -72,10 +72,10 @@ class Board:
             for n in self.neighbour_objs(coords):
                 n.input_remove(old_node)
 
-        # Break any wires we need to
+        # Perform any required wire joins/breaks
         if isinstance(node, Wire):
             self._grid_local_wire_join(coords, node)
-        else:
+        elif isinstance(old_node, Wire):
             self._grid_local_wire_break(coords, old_node)
 
         # Make sure all neighbours have their connections updated
