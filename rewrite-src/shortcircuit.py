@@ -241,8 +241,8 @@ class Board:
                 dirty_simnodes[nc] = n
 
         # Update IO for all dirty_simnodes
-        for coord, _ in dirty_simnodes.items():
-            self._grid_local_io_refresh(coord)
+        for coord, n in dirty_simnodes.items():
+            n.recalculate_io(coord, self)
         # Make sure the new wires immediately show the correct value
         for wire in new_wires:
             wire.calculate_next_output()
