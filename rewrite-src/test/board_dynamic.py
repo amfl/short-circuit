@@ -205,6 +205,31 @@ class ClockTest(unittest.TestCase):
         self.assertEqual(self.nand.inputs, {wire})
         self.assertEqual(wire.inputs, {self.nand})
 
+
+class ClockTest2(unittest.TestCase):
+    def setUp(self):
+        board_str = ("---\n"
+                     "d..\n"
+                     "---\n")
+        self.board = Board.deserialize(board_str)
+        self.nand = self.board.get((0, 1))
+
+        # Dynamically finish the loop
+        self.board.set((2, 1), Wire())
+
+    def testBasicAssumptions(self):
+        top_wire = self.board.get((2, 0))
+        bottom_wire = self.board.get((2, 2))
+        self.assertIs(top_wire, bottom_wire)
+        self.assertEqual(self.nand.inputs, {top_wire})
+        self.assertEqual(bottom_wire.inputs, {self.nand})
+
+    def testTickingAfterWireJoin(self):
+        for i in range(10):
+            self.assertEqual(bool(i % 2), self.nand.output())
+            self.board.tick()
+
+
 class PlaygroundTest(unittest.TestCase):
     """A big board to hold all the miscellaneous test cases"""
 
