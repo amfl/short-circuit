@@ -3,6 +3,7 @@ import sys
 
 import util
 from world import World
+from shortcircuit import Wire
 
 from blessed import Terminal
 from blessed.formatters import FormattingString
@@ -44,8 +45,7 @@ class TermUI:
         print(self.t.move(self.cursor_pos[1], self.cursor_pos[0]), end='')
         sys.stdout.flush()
 
-    @classmethod
-    def key_to_event(cls, inp):
+    def key_to_event(self, inp):
         """Convert a keypress + UI state into an event we can put on the UI
         queue"""
 
@@ -62,6 +62,16 @@ class TermUI:
             return {'quit': True}
         elif inp == '.':
             return {'tick': True}
+        elif inp == ' ':
+            existing_obj = self.world.boards[0].get(self.cursor_pos)
+            node = '.' if isinstance(existing_obj, Wire) else '-'
+            return {'tile_set': { 'coord': self.cursor_pos,
+                                  'index': 0,
+                                  'node': node }}
+        elif inp == 'n':
+            return {'tile_set': { 'coord': self.cursor_pos,
+                                  'index': 0,
+                                  'node': 'd' }}
         else:
             return None
 
