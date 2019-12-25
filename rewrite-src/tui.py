@@ -1,5 +1,7 @@
 import logging
+import sys
 
+import util
 from world import World
 
 from blessed import Terminal
@@ -37,12 +39,31 @@ class TermUI:
         string = board.serialize()
         print(string)
 
+        # Move the cursor to the cursor position
+        # Can change this to be smarter if we ever have a viewport
+        print(self.t.move(self.cursor_pos[1], self.cursor_pos[0]), end='')
+        sys.stdout.flush()
+
     @classmethod
-    def key_to_event(cls, keycode):
+    def key_to_event(cls, inp):
         """Convert a keypress + UI state into an event we can put on the UI
         queue"""
 
-        return None
+        # Check to see if we are modifying the UI state first
+        if inp == 'k' or inp.name == 'KEY_UP':
+            return {'move': (0, -1)}
+        elif inp == 'j' or inp.name == 'KEY_DOWN':
+            return {'move': (0, 1)}
+        elif inp == 'h' or inp.name == 'KEY_LEFT':
+            return {'move': (-1, 0)}
+        elif inp == 'l' or inp.name == 'KEY_RIGHT':
+            return {'move': (1, 0)}
+        elif inp == 'q':
+            return {'quit': True}
+        elif inp == '.':
+            return {'tick': True}
+        else:
+            return None
 
     def editor_loop(self):
         while True:
@@ -52,3 +73,22 @@ class TermUI:
             # Get input
             inp = self.t.inkey()
             logger.debug('Key Input: ' + repr(inp))
+
+            ui_event = self.key_to_event(inp)
+            if ui_event is None:
+                continue
+
+            move_delta = ui_event.get('move')
+            quit = ui_event.get('quit')
+
+            if move_delta:
+                new_pos = util.add(self.cursor_pos, move_delta)
+                if min(new_pos) >= 0:
+                    self.cursor_pos = new_pos
+            elif quit:
+                return
+
+            else:
+                # Pass it along to the world message queue
+                self.world.submit(ui_event)
+                self.world.process_queue()
