@@ -256,12 +256,12 @@ class Board:
             wire.tick()
 
     def _grid_local_io_refresh(self, coords):
-        # Update neighbours
-        neighbour_coords = util.neighbour_coords(coords)
-        for nc in neighbour_coords:
-            n = self.get(coords)
+        """Update IO for myself and my neighbours"""
+        area_coords = util.neighbour_coords(coords) + [coords]
+        for c in area_coords:
+            n = self.get(c)
             if n is not None:
-                n.recalculate_io(coords, self)
+                n.recalculate_io(c, self)
 
     def _grid_global_wire_join(self):
         """Globally reevaluates the grid and performs low-level wire joins.
