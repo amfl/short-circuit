@@ -45,6 +45,9 @@ class TermUI:
         print(self.t.move(self.cursor_pos[1], self.cursor_pos[0]), end='')
         sys.stdout.flush()
 
+    def _obj_under_cursor(self):
+        return self.world.boards[0].get(self.cursor_pos)
+
     def key_to_event(self, inp):
         """Convert a keypress + UI state into an event we can put on the UI
         queue"""
@@ -63,8 +66,7 @@ class TermUI:
         elif inp == '.':
             return {'tick': True}
         elif inp == ' ':
-            existing_obj = self.world.boards[0].get(self.cursor_pos)
-            node = '.' if isinstance(existing_obj, Wire) else '-'
+            node = '.' if isinstance(self._obj_under_cursor(), Wire) else '-'
             return {'tile_set': { 'coord': self.cursor_pos,
                                   'index': 0,
                                   'node': node }}
@@ -72,6 +74,9 @@ class TermUI:
             return {'tile_set': { 'coord': self.cursor_pos,
                                   'index': 0,
                                   'node': 'd' }}
+        elif inp == 'x':
+            # Examine tile under cursor
+            logger.info(repr(self._obj_under_cursor()))
         else:
             return None
 
