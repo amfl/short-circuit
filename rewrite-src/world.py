@@ -34,11 +34,14 @@ class World:
             self.boards[index].set(coord, node)
 
         elif nand_rotate:
-            nand = nand_rotate['nand']
             coord = nand_rotate['coord']
             index = nand_rotate['index']
             delta = nand_rotate['delta']
-            nand.rotate_facing(delta, coord, self.boards[index])
+
+            board = self.boards[index]
+            nand = board.get(coord)
+
+            nand.rotate_facing(delta, coord, board)
 
         elif tick:
             for board in self.boards:

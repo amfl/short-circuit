@@ -3,7 +3,7 @@ import sys
 
 import util
 from world import World
-from shortcircuit import Wire
+from shortcircuit import Wire, Nand
 
 from blessed import Terminal
 from blessed.formatters import FormattingString
@@ -71,9 +71,15 @@ class TermUI:
                                   'index': 0,
                                   'node': node }}
         elif inp == 'n':
-            return {'tile_set': { 'coord': self.cursor_pos,
-                                  'index': 0,
-                                  'node': 'd' }}
+            n = self._obj_under_cursor()
+            if isinstance(n, Nand):
+                return {'nand_rotate': { 'coord': self.cursor_pos,
+                                         'index': 0,
+                                         'delta': 1 }}
+            else:
+                return {'tile_set': { 'coord': self.cursor_pos,
+                                      'index': 0,
+                                      'node': 'd' }}
         elif inp == 'x':
             # Examine tile under cursor
             logger.info(repr(self._obj_under_cursor()))

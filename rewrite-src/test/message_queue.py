@@ -22,8 +22,7 @@ class TestMessageQueue(unittest.TestCase):
     def testRotateNand(self):
         coord = (0, 0)
         nand = self.board.get(coord)
-        self.world.submit({'nand_rotate': { 'nand': nand,
-                                            'coord': coord,
+        self.world.submit({'nand_rotate': { 'coord': coord,
                                             'index': 0,
                                             'delta': 1 }})
         self.world.process_queue()
