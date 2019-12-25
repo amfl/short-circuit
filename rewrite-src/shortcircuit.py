@@ -193,13 +193,9 @@ class Board:
 
         new_wire.signal = any([w.output() for w in neighbouring_wires])
 
-        # Unioning N sets is ugly in python
         old_input_sets = [w.inputs for w in neighbouring_wires]
-        try:
-            new_wire.inputs = old_input_sets[0].union(*old_input_sets[1:])
-        except IndexError:
-            # It's possible there is no sets[0]
-            new_wire.inputs = set()
+        # The new inputs are a union of all the old input sets
+        new_wire.inputs = set().union(*old_input_sets)
 
         dirty_simnodes = self._recursive_wire_replace(coords, new_wire)
 
