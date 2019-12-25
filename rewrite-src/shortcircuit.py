@@ -204,7 +204,14 @@ class Board:
             # It's possible there is no sets[0]
             new_wire.inputs = set()
 
-        self._recursive_wire_replace(coords, new_wire)
+        dirty_simnodes = self._recursive_wire_replace(coords, new_wire)
+
+        # Update IO for all dirty_simnodes
+        for coord, n in dirty_simnodes.items():
+            n.recalculate_io(coord, self)
+        # Make sure the new wires immediately show the correct value
+        new_wire.calculate_next_output()
+        new_wire.tick()
 
         return new_wire
 
