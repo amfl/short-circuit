@@ -4,6 +4,7 @@ import logging
 
 logger = logging.getLogger()
 
+
 class World:
     def __init__(self, boards):
         self.boards = boards
@@ -14,7 +15,8 @@ class World:
         self.queue.put(arg)
 
     def start(self):
-        """Starts reading from the queue. Blocks until we receive the quit message."""
+        """Starts reading from the queue. Blocks until we receive the quit
+        message."""
         while True:
             self.process_queue()
 

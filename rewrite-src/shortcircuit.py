@@ -104,7 +104,8 @@ class Board:
         rows = string.split('\n')
 
         board = Board()
-        board.grid = [list(map(cls.deserialize_simnode, list(x))) for x in rows]
+        board.grid = [list(map(cls.deserialize_simnode, list(row)))
+                      for row in rows]
 
         board._grid_global_wire_join()
         board._grid_global_io_refresh()

@@ -2,21 +2,20 @@ import logging
 import sys
 
 import util
-from world import World
 from shortcircuit import Wire, Nand
 
 from blessed import Terminal
-from blessed.formatters import FormattingString
 from blessed.keyboard import Keystroke
 
 logger = logging.getLogger()
+
 
 class TermUI:
     def __init__(self, args, world):
         self.args = args
         self.t = Terminal()
         self.world = world
-        self.cursor_pos = (0,0)
+        self.cursor_pos = (0, 0)
 
     def start(self):
         """Start the UI and block until the UI is closed."""
@@ -48,7 +47,7 @@ class TermUI:
     def _obj_under_cursor(self):
         return self.world.boards[0].get(self.cursor_pos)
 
-    def key_to_event(self, inp):
+    def key_to_event(self, inp: Keystroke):
         """Convert a keypress + UI state into an event we can put on the UI
         queue"""
 
@@ -67,19 +66,19 @@ class TermUI:
             return {'tick': True}
         elif inp == ' ':
             node = '.' if isinstance(self._obj_under_cursor(), Wire) else '-'
-            return {'tile_set': { 'coord': self.cursor_pos,
-                                  'index': 0,
-                                  'node': node }}
+            return {'tile_set': {'coord': self.cursor_pos,
+                                 'index': 0,
+                                 'node': node}}
         elif inp == 'n':
             n = self._obj_under_cursor()
             if isinstance(n, Nand):
-                return {'nand_rotate': { 'coord': self.cursor_pos,
-                                         'index': 0,
-                                         'delta': 1 }}
+                return {'nand_rotate': {'coord': self.cursor_pos,
+                                        'index': 0,
+                                        'delta': 1}}
             else:
-                return {'tile_set': { 'coord': self.cursor_pos,
-                                      'index': 0,
-                                      'node': 'd' }}
+                return {'tile_set': {'coord': self.cursor_pos,
+                                     'index': 0,
+                                     'node': 'd'}}
         elif inp == 'x':
             # Examine tile under cursor
             logger.info(repr(self._obj_under_cursor()))
