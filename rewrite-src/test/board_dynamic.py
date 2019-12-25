@@ -113,6 +113,16 @@ class TestWireBreakAdvanced(unittest.TestCase):
         self.assertEqual(left_wire.inputs, self.left_input_nands)
         self.assertEqual(right_wire.inputs, self.right_input_nands)
 
+    def testWireReplacementInputs(self):
+        new_nand = Nand()
+        self.board.set(self.center_coords, new_nand)
+
+        left_wire = self.board.get((2, 1))
+        right_wire = self.board.get((4, 1))
+        self.assertEqual(left_wire.inputs, self.left_input_nands)
+        self.assertEqual(right_wire.inputs, self.right_input_nands)
+        self.assertEqual(new_nand.inputs, {left_wire, right_wire})
+
     def testWireBreakOutputs(self):
         self.board.set(self.center_coords, None)
 
@@ -175,14 +185,19 @@ class PlaygroundTest(unittest.TestCase):
     """A big board to hold all the miscellaneous test cases"""
 
     def setUp(self):
-        board_str = ("r----r-\n"
-                     ".-.....\n"
-                     "-l-d...\n"
-                     "-..--..\n")
+        board_str = ("r----r-.-\n"
+                     ".-.......\n"
+                     "-l-d.....\n"
+                     "-..--....\n")
         self.board = Board.deserialize(board_str)
 
     def testPlaceNand(self):
         coords = (6, 2)
+        self.board.set(coords, Nand())
+        self.assertIsInstance(self.board.get(coords), Nand)
+
+    def testPlaceNandOnIsolatedWire(self):
+        coords = (8, 0)
         self.board.set(coords, Nand())
         self.assertIsInstance(self.board.get(coords), Nand)
 
