@@ -1,5 +1,5 @@
 import unittest
-from shortcircuit import Board, Wire
+from shortcircuit import Board, Wire, Nand
 
 
 class TestWireJoin(unittest.TestCase):
@@ -169,6 +169,22 @@ class TestNandRotation(unittest.TestCase):
         self.board.tick()
         self.assertFalse(self.right_wire.output())
         self.assertTrue(self.bottom_wire.output())
+
+
+class PlaygroundTest(unittest.TestCase):
+    """A big board to hold all the miscellaneous test cases"""
+
+    def setUp(self):
+        board_str = ("r----r-\n"
+                     ".-.....\n"
+                     "-l-d...\n"
+                     "-..--..\n")
+        self.board = Board.deserialize(board_str)
+
+    def testPlaceNand(self):
+        coords = (6, 2)
+        self.board.set(coords, Nand())
+        self.assertIsInstance(self.board.get(coords), Nand)
 
 
 if __name__ == '__main__':
