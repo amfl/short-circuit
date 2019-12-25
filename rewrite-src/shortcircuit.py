@@ -162,10 +162,7 @@ class Board:
 
         """
         # Replace the current wire
-        try:
-            self.set_basic(old_wire_coords, new_wire)
-        except IndexError:
-            return {}
+        self.set_basic(old_wire_coords, new_wire)
 
         dirty_simnodes = {}
 
