@@ -196,9 +196,19 @@ class Board:
         return new_wire
 
     def _grid_local_wire_break(self, coords, broken_wire: Wire):
-        """Break a wire into multiple bits if required"""
+        """Break a wire into multiple bits if required
 
-        assert(self.get(coords) is None)
+        Parameters
+        ----------
+
+        coords : (x, y)
+          Coordinates of where the wire group was broken.
+        broken_wire : Wire
+          The wire object which was broken.
+        """
+
+        current_obj = self.get(coords)
+        assert(not isinstance(current_obj, Wire))
 
         def recursive_wire_flood(old_wire_coords, new_wire):
             # Replace the current wire
