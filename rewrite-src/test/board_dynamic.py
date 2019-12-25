@@ -181,6 +181,30 @@ class TestNandRotation(unittest.TestCase):
         self.assertTrue(self.bottom_wire.output())
 
 
+class ClockTest(unittest.TestCase):
+    def setUp(self):
+        board_str = (".--\n"
+                     "d.-\n"
+                     ".--\n")
+        self.board = Board.deserialize(board_str)
+        self.nand = self.board.get((0, 1))
+
+    def testIOInputFirst(self):
+        self.board.set((0, 0), Wire())
+        self.board.set((0, 2), Wire())
+
+        wire = self.board.get((1, 2))
+        self.assertEqual(self.nand.inputs, {wire})
+        self.assertEqual(wire.inputs, {self.nand})
+
+    def testIOOutputFirst(self):
+        self.board.set((0, 2), Wire())
+        self.board.set((0, 0), Wire())
+
+        wire = self.board.get((1, 2))
+        self.assertEqual(self.nand.inputs, {wire})
+        self.assertEqual(wire.inputs, {self.nand})
+
 class PlaygroundTest(unittest.TestCase):
     """A big board to hold all the miscellaneous test cases"""
 
