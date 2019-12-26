@@ -47,6 +47,11 @@ class TermUI:
     def _obj_under_cursor(self):
         return self.world.boards[0].get(self.cursor_pos)
 
+    def write_board_to_disk(self, board, filepath):
+        logging.info(f'Writing filepath: {filepath}')
+        with open(filepath, 'w') as f:
+            f.write(board.serialize())
+
     def key_to_event(self, inp: Keystroke):
         """Convert a keypress + UI state into an event we can put on the UI
         queue"""
@@ -82,6 +87,11 @@ class TermUI:
         elif inp == 'x':
             # Examine tile under cursor
             logger.info(repr(self._obj_under_cursor()))
+
+        elif inp == 'w':
+            return {'write_board': {'index': 0,
+                                    'filepath': 'output/dump.ssboard'}}
+
         else:
             return None
 
@@ -100,6 +110,7 @@ class TermUI:
 
             move_delta = ui_event.get('move')
             quit = ui_event.get('quit')
+            write_board = ui_event.get('write_board')
 
             if move_delta:
                 new_pos = util.add(self.cursor_pos, move_delta)
@@ -107,6 +118,10 @@ class TermUI:
                     self.cursor_pos = new_pos
             elif quit:
                 return
+            elif write_board:
+                index = write_board['index']
+                self.write_board_to_disk(self.world.boards[index],
+                                         write_board['filepath'])
 
             else:
                 # Pass it along to the world message queue
