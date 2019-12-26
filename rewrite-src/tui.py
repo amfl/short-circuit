@@ -32,13 +32,32 @@ class TermUI:
 
         print(self.t.exit_fullscreen())
 
+    def render_basic(self, board):
+        string = board.serialize()
+        print(string)
+
+    def render_pretty(self, board):
+        # Colors to use for dead/alive signal
+        colors = [8, 1]
+        for row in board.grid:
+            for n in row:
+                try:
+                    glyph = n.serialize()
+                    glyph = self.t.color(colors[n.output()])(glyph)
+                except AttributeError:
+                    glyph = '.'
+                print(glyph, end='')
+            print('')
+
     def render(self, board):
         """Renders a board onto the current terminal"""
         print(self.t.clear())
         print(self.t.move(0, 0), end='')
 
-        string = board.serialize()
-        print(string)
+        if self.args.box_draw:
+            self.render_pretty(self.world.boards[0])
+        else:
+            self.render_basic(self.world.boards[0])
 
         # Move the cursor to the cursor position
         # Can change this to be smarter if we ever have a viewport
