@@ -1,6 +1,7 @@
 import queue
-from shortcircuit import Board
 import logging
+
+from board import Board
 
 logger = logging.getLogger()
 

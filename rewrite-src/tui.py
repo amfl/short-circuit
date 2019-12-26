@@ -1,12 +1,12 @@
+from datetime import datetime
 import logging
 import sys
-from datetime import datetime
-
-import util
-from shortcircuit import Nand, Wire, Switch
 
 from blessed import Terminal
 from blessed.keyboard import Keystroke
+
+import util
+from simnode import Nand, Wire, Switch
 
 logger = logging.getLogger()
 

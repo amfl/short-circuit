@@ -1,5 +1,7 @@
 import unittest
-from shortcircuit import Board, Wire, Nand
+
+from board import Board
+from simnode import Nand, Wire
 
 
 class TestWireJoin(unittest.TestCase):

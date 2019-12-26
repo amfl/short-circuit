@@ -1,9 +1,10 @@
 import argparse
-from shortcircuit import Board
-from world import World
-from tui import TermUI
-
 import logging
+
+from board import Board
+from tui import TermUI
+from world import World
+
 logger = logging.getLogger()
 logname = 'output/gameplay.log'
 logging.basicConfig(filename=logname,

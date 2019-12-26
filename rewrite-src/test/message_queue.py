@@ -1,6 +1,8 @@
 import unittest
+
+from board import Board
+from simnode import Wire
 from world import World
-from shortcircuit import Board, Wire
 
 
 class TestMessageQueue(unittest.TestCase):
