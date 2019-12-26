@@ -28,6 +28,7 @@ class World:
         tile_set = message.get('tile_set')
         nand_rotate = message.get('nand_rotate')
         tick = message.get('tick')
+        switch_toggle = message.get('switch_toggle')
 
         if tile_set:
             node = Board.deserialize_simnode(tile_set['node'])
@@ -44,6 +45,16 @@ class World:
             nand = board.get(coord)
 
             nand.rotate_facing(delta, coord, board)
+
+        elif switch_toggle:
+            coord = switch_toggle['coord']
+            index = switch_toggle['index']
+            value = switch_toggle['value']
+
+            board = self.boards[index]
+            switch = board.get(coord)
+
+            switch.toggle(value)
 
         elif tick:
             for board in self.boards:

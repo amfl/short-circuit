@@ -3,7 +3,7 @@ import sys
 from datetime import datetime
 
 import util
-from shortcircuit import Nand, Wire
+from shortcircuit import Nand, Wire, Switch
 
 from blessed import Terminal
 from blessed.keyboard import Keystroke
@@ -110,7 +110,7 @@ class TermUI:
             return {'quit': True}
         elif inp == '.':
             return {'tick': True}
-        elif inp == ' ':
+        elif inp == ' ':  # Wire / delete
             node = '-' if self._obj_under_cursor() is None else '.'
             return {'tile_set': {'coord': self.cursor_pos,
                                  'index': 0,
@@ -125,8 +125,18 @@ class TermUI:
                 return {'tile_set': {'coord': self.cursor_pos,
                                      'index': 0,
                                      'node': 'd'}}
-        elif inp == 'x':
-            # Examine tile under cursor
+        elif inp == 'o':  # Switch
+            n = self._obj_under_cursor()
+            if isinstance(n, Switch):
+                return {'switch_toggle': {'coord': self.cursor_pos,
+                                          'index': 0,
+                                          'value': None}}
+            else:
+                return {'tile_set': {'coord': self.cursor_pos,
+                                     'index': 0,
+                                     'node': 'o'}}
+
+        elif inp == 'x':  # Examine tile under cursor
             logger.info(repr(self._obj_under_cursor()))
 
         elif inp == 'w':

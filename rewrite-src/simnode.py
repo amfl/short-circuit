@@ -209,3 +209,10 @@ class Switch(SimNode):
                 output.inputs.add(self)
             except AttributeError:
                 pass
+
+    def toggle(self, value=None):
+        """Toggles the signal of the switch, or sets its signal directly."""
+        if value is None:
+            self.signal = not self.signal
+        else:
+            self.signal = value
