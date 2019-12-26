@@ -1,6 +1,6 @@
 import logging
 
-from ui import UI
+from world import World
 
 from blessed import Terminal
 from blessed.formatters import FormattingString
@@ -8,19 +8,15 @@ from blessed.keyboard import Keystroke
 
 logger = logging.getLogger()
 
-class TermUI(UI):
-    def __init__(self, args, board):
-        super().__init__()
-
+class TermUI:
+    def __init__(self, args, world):
         self.args = args
         self.t = Terminal()
-        self.board = board
+        self.world = world
         self.cursor_pos = (0,0)
 
     def start(self):
         """Start the UI and block until the UI is closed."""
-
-        super().start()
 
         # Ready the screen for drawing
         print(self.t.enter_fullscreen())
@@ -50,7 +46,8 @@ class TermUI(UI):
 
     def editor_loop(self):
         while True:
-            self.render(self.board)
+            # Just render the first board for now
+            self.render(self.world.boards[0])
 
             # Get input
             inp = self.t.inkey()
