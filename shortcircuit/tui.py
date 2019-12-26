@@ -5,8 +5,8 @@ import sys
 from blessed import Terminal
 from blessed.keyboard import Keystroke
 
-import util
-from simnode import Nand, Wire, Switch
+import shortcircuit.util as util
+from shortcircuit.simnode import Nand, Wire, Switch
 
 logger = logging.getLogger()
 

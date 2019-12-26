@@ -1,6 +1,7 @@
 FROM python:alpine3.9
 
 WORKDIR /proj
-COPY src /proj/src
-RUN pip install -r src/requirements.txt
-CMD python /proj/src/main.py
+COPY requirements.txt shortcircuit /proj/shortcircuit/
+RUN pip install -r shortcircuit/requirements.txt
+ENV PYTHONPATH=${PYTHONPATH}:/proj
+CMD python /proj/shortcircuit/main.py

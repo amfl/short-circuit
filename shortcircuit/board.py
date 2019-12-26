@@ -1,6 +1,8 @@
-from simnode import SimNode, Wire, Nand, Switch
-import util
 import logging
+
+import shortcircuit.util as util
+from shortcircuit.simnode import SimNode, Wire, Nand, Switch
+
 logger = logging.getLogger()
 
 

@@ -36,16 +36,16 @@ Standard Python Library.
 To run tests, you can simply run the test file that you are interested in:
 
 ```bash
-export PYTHONPATH=${PYTHONPATH}:./rewrite-src
-python3 ./rewrite-src/test/FILE_HERE.py
+export PYTHONPATH=${PYTHONPATH}:./shortcircuit
+python3 ./shortcircuit/test/FILE_HERE.py
 ```
 
 Or you can use [`pytest`][pytest-unittest] to call them all at once:
 
 ```bash
-export PYTHONPATH=${PYTHONPATH}:./rewrite-src
+export PYTHONPATH=${PYTHONPATH}:./shortcircuit
 pip install pytest
-pytest rewrite-src/test/*
+pytest ./shortcircuit/test/*
 ```
 
 [python-unittest]: https://docs.python.org/3/library/unittest.html#module-unittest

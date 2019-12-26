@@ -1,6 +1,8 @@
-import util
 import logging
 import json
+
+import shortcircuit.util as util
+
 logger = logging.getLogger()
 
 

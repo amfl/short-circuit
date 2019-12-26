@@ -1,8 +1,8 @@
 import logging
 import unittest
 
-from board import Board
-from simnode import Switch, Nand, Wire
+from shortcircuit.board import Board
+from shortcircuit.simnode import Switch, Nand, Wire
 
 logger = logging.getLogger()
 
