@@ -3,7 +3,7 @@ import sys
 from datetime import datetime
 
 import util
-from shortcircuit import Nand
+from shortcircuit import Nand, Wire
 
 from blessed import Terminal
 from blessed.keyboard import Keystroke
@@ -32,32 +32,53 @@ class TermUI:
 
         print(self.t.exit_fullscreen())
 
-    def render_basic(self, board):
-        string = board.serialize()
-        print(string)
+    def _get_fancy_glyph(self, board, coords, node):
+        """Gets a fancy glyph for a SimNode. Takes neighbours into account."""
+        if isinstance(node, Wire):
+            # 4-bit indexed based on neighbours.
+            wire_glyphs = [
+                'o', '╸', '╺', '━',
+                '╹', '┛', '┗', '┻',
+                '╻', '┓', '┏', '┳',
+                '┃', '┫', '┣', '╋'
+            ]
 
-    def render_pretty(self, board):
-        # Colors to use for dead/alive signal
-        colors = [8, 1]
-        for row in board.grid:
-            for n in row:
-                try:
-                    glyph = n.serialize()
-                    glyph = self.t.color(colors[n.output()])(glyph)
-                except AttributeError:
-                    glyph = '.'
-                print(glyph, end='')
-            print('')
+            connecting_neighbour = [board.get(c) is not None
+                                    for c in util.neighbour_coords(coords)]
+            index = (1 * connecting_neighbour[3] +
+                     2 * connecting_neighbour[1] +
+                     4 * connecting_neighbour[0] +
+                     8 * connecting_neighbour[2])
+            return wire_glyphs[index]
+        else:
+            return node.serialize()
 
     def render(self, board):
         """Renders a board onto the current terminal"""
         print(self.t.clear())
         print(self.t.move(0, 0), end='')
 
-        if self.args.box_draw:
-            self.render_pretty(self.world.boards[0])
-        else:
-            self.render_basic(self.world.boards[0])
+        board = self.world.boards[0]
+
+        # DEBUG For super ghetto rendering...
+        # print(board.serialize())
+
+        # Colors to use for dead/alive signal
+        colors = [8, 1]
+        for y in range(len(board.grid)):
+            for x in range(len(board.grid[y])):
+                coords = (x, y)
+                node = board.get(coords)
+                try:
+                    if self.args.box_draw:
+                        glyph = self._get_fancy_glyph(board, coords, node)
+                    else:
+                        glyph = node.serialize()
+                    glyph = self.t.color(colors[node.output()])(glyph)
+                except AttributeError:
+                    glyph = '.'
+                print(glyph, end='')
+            print('')
 
         # Move the cursor to the cursor position
         # Can change this to be smarter if we ever have a viewport
