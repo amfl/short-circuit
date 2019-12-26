@@ -1,5 +1,6 @@
 import logging
 import sys
+from datetime import datetime
 
 import util
 from shortcircuit import Nand
@@ -89,8 +90,9 @@ class TermUI:
             logger.info(repr(self._obj_under_cursor()))
 
         elif inp == 'w':
+            filename = datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
             return {'write_board': {'index': 0,
-                                    'filepath': 'output/dump.ssboard'}}
+                                    'filepath': f'output/{filename}.ssboard'}}
 
         else:
             return None
