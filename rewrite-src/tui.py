@@ -2,7 +2,7 @@ import logging
 import sys
 
 import util
-from shortcircuit import Wire, Nand
+from shortcircuit import Nand
 
 from blessed import Terminal
 from blessed.keyboard import Keystroke
@@ -65,7 +65,7 @@ class TermUI:
         elif inp == '.':
             return {'tick': True}
         elif inp == ' ':
-            node = '.' if isinstance(self._obj_under_cursor(), Wire) else '-'
+            node = '-' if self._obj_under_cursor() is None else '.'
             return {'tile_set': {'coord': self.cursor_pos,
                                  'index': 0,
                                  'node': node}}
