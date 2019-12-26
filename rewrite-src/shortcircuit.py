@@ -88,22 +88,23 @@ class Board:
             raise IndexError
         self.grid[y][x] = node
 
+    @staticmethod
+    def deserialize_simnode(glyph):
+        for cls in [Wire, Nand, Switch]:
+            try:
+                return cls.deserialize(glyph)
+            except:
+                continue
+        return None
+
     @classmethod
     def deserialize(cls, string):
         """Rebuilds the grid from a string."""
 
-        def to_simnode(glyph):
-            for cls in [Wire, Nand, Switch]:
-                try:
-                    return cls.deserialize(glyph)
-                except:
-                    continue
-            return None
-
         rows = string.split('\n')
 
         board = Board()
-        board.grid = [list(map(to_simnode, list(x))) for x in rows]
+        board.grid = [list(map(cls.deserialize_simnode, list(x))) for x in rows]
 
         board._grid_global_wire_join()
         board._grid_global_io_refresh()
