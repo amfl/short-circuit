@@ -16,7 +16,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r src/requirements.txt
+        pip install -r requirements.txt
     - name: Lint with flake8
       run: |
         pip install flake8
@@ -28,6 +28,6 @@ jobs:
       run: |
         pip install pytest
         mkdir output
-        export PYTHONPATH=${PYTHONPATH}:./rewrite-src
-        pytest rewrite-src/test/*
+        export PYTHONPATH=${PYTHONPATH}:./
+        pytest shortcircuit/test/*
 
