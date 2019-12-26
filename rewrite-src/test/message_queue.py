@@ -19,7 +19,7 @@ class TestMessageQueue(unittest.TestCase):
         self.world.process_queue()
         self.assertIsInstance(self.board.get(coord), Wire)
 
-    def testRotateNand(self):
+    def testNandRotate(self):
         coord = (0, 0)
         self.world.submit({'nand_rotate': {'coord': coord,
                                            'index': 0,
