@@ -1,5 +1,6 @@
 import util
 import logging
+import json
 logger = logging.getLogger()
 
 
@@ -39,6 +40,20 @@ class SimNode:
     def outputs_to(self, coord_delta):
         """Whether this node can output in the given direction"""
         return True
+
+    def state_obj(self):
+        """An object which represents this object's current state. Is used for
+        inspecting a SimNode for debugging."""
+        state = {
+            self.__class__.__name__: hex(id(self)),
+            "signal": self.output()
+        }
+        if hasattr(self, 'inputs'):
+            state["inputs"] = [hex(id(x)) for x in self.inputs]
+        return state
+
+    def __repr__(self):
+        return json.dumps(self.state_obj())
 
 
 class Wire(SimNode):
