@@ -80,7 +80,7 @@ class Wire(SimNode):
     @classmethod
     def deserialize(cls, glyph):
         assert(glyph in cls.serialized_glyphs)
-        return Wire()
+        return cls()
 
     def serialize(self):
         return self.serialized_glyphs[0]
@@ -138,7 +138,7 @@ class Nand(SimNode):
 
     @classmethod
     def deserialize(cls, glyph):
-        n = Nand()
+        n = cls()
         n.facing = cls.serialized_glyphs.index(glyph.lower())
         n.signal = glyph.isupper()
         return n
@@ -192,7 +192,7 @@ class Switch(SimNode):
 
     @classmethod
     def deserialize(cls, glyph):
-        s = Switch()
+        s = cls()
         s.signal = cls.serialized_glyphs.index(glyph)
         return s
 
