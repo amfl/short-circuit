@@ -20,10 +20,9 @@ mkdir -p "$OUTDIR"
 docker run --rm -it \
     -u "$(id -u):$(id -g)" \
     -v "${OUTDIR}:/proj/output" \
-    -v "$(pwd)/src:/proj/src:ro" \
-    -v "$(pwd)/rewrite-src:/proj/rewrite-src:ro" \
+    -v "$(pwd)/shortcircuit:/proj/shortcircuit:ro" \
     -e "TERM=${TERM}" \
     -e "REVISION=${REVISION}" \
     short-circuit:latest \
     sh
-    # python /proj/src/main.py $@
+    # python /proj/shortcircuit/main.py $@

@@ -1,5 +1,5 @@
 import unittest
-from shortcircuit import Board
+from shortcircuit.board import Board
 
 
 @unittest.skip("Bridging wire is unimplemented")

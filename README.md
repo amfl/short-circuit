@@ -36,17 +36,44 @@ Standard Python Library.
 To run tests, you can simply run the test file that you are interested in:
 
 ```bash
-export PYTHONPATH=${PYTHONPATH}:./rewrite-src
-python3 ./rewrite-src/test/FILE_HERE.py
+export PYTHONPATH=${PYTHONPATH}:./shortcircuit
+python3 ./shortcircuit/test/FILE_HERE.py
 ```
 
 Or you can use [`pytest`][pytest-unittest] to call them all at once:
 
 ```bash
-export PYTHONPATH=${PYTHONPATH}:./rewrite-src
+export PYTHONPATH=${PYTHONPATH}:./shortcircuit
 pip install pytest
-pytest rewrite-src/test/*
+pytest ./shortcircuit/test/*
 ```
 
 [python-unittest]: https://docs.python.org/3/library/unittest.html#module-unittest
 [pytest-unittest]: https://docs.pytest.org/en/latest/unittest.html
+
+## Development
+
+Here's how I develop short-circuit if you would like to jump in and help!
+
+I prefer to do my development with docker images, you may find it easier to
+just use a [python venv][venv]. If you choose to use docker, there are two
+convenience scripts in the repo to help get set up quickly.
+
+- `docker-build.sh` : Builds the docker image with all the dependencies.
+- `docker-run.sh` : Runs the docker image and mounts the source directory.
+
+**My workflow**
+
+1. Build the docker image as shown above
+2. Run the docker image as shown above, which will place you at a bash prompt
+3. Start a `tail -F ./output/gameplay.log` in another terminal to view logs
+4. Hack on the source in your editor
+5. Run the linter in the container with `flake8 ./shortcircuit`
+6. Run the tests in the container with `pytest ./shortcircuit/tests/*`
+7. Run the code in the container with `python ./shortcircuit/main.py`
+8. GOTO 4
+
+Because the source directory is mounted, it's possible to quickly hack on
+source without having to rebuild everything.
+
+[venv]: https://docs.python.org/3/library/venv.html
