@@ -165,7 +165,7 @@ class Nand(SimNode):
 
         for i, delta in enumerate(deltas):
             nc = util.add(delta, my_coord)
-            n = board.get(nc)
+            _, nc, n = board.into(nc, delta)
 
             if n is not None:
                 if i == self.facing:
