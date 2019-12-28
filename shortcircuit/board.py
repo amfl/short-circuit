@@ -317,8 +317,17 @@ class Board:
                 if not isinstance(tile, Wire):
                     continue
 
-                left = tile_lookup.get((x-1, y))
-                top = tile_lookup.get((x, y-1))
+                # Typically we only look directly above/left of the current
+                # tile, but wire bridges throw a spanner in the works, so we
+                # will need to traverse them
+                dx = x - 1
+                dy = y - 1
+                while isinstance(self.get((dx, y)), WireBridge):
+                    dx -= 1
+                while isinstance(self.get((x, dy)), WireBridge):
+                    dy -= 1
+                left = tile_lookup.get((dx, y))
+                top = tile_lookup.get((x, dy))
 
                 neighbouring_labels = [x for x in [left, top] if x is not None]
                 try:
