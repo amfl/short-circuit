@@ -61,6 +61,27 @@ class Board:
         except IndexError:
             return None
 
+    def into(self, coords, delta):
+        """Similar to `get`, but "enters into" the SimNode if possible (Crosses
+        bridges, enters portals...)
+
+        Parameters
+        ----------
+
+        coords : tuple
+          The coords that the querying node perceives this node to have
+        delta : tuple
+          The direction the querying node went to reach me
+
+        Returns : tuple
+          (new_board, new_coords, SimNode)
+        """
+        n = self.get(coords)
+        if n is None:
+            return (self, coords, None)
+        else:
+            return n.get(self, coords, delta)
+
     def set(self, coords, node: SimNode):
         """Places a SimNode on the board. This also performs any wire joining
         and IO updates."""
@@ -173,12 +194,7 @@ class Board:
         # In the list of all wire neighbours which aren't the new wire...
         for nd in util.neighbour_deltas():
             nc = util.add(old_wire_coords, nd)
-            n = self.get(nc)
-            if n is None:
-                continue
-            # TODO new_wire might cause a problem here... Might need to be the
-            # old_wire....
-            board, nc, n = n.get(self, nc, nd)
+            _, nc, n = self.into(nc, nd)
             if isinstance(n, Wire) and n != new_wire:
                 # Replace them, too!
                 dirty_simnodes.update(
@@ -240,10 +256,7 @@ class Board:
         for nd in util.neighbour_deltas():
             nc = util.add(coords, nd)
             # Use coords to avoid mutating what we are iterating over
-            n = self.get(nc)
-            if n is None:
-                continue
-            _, nc, n = n.get(self, nc, nd)
+            _, nc, n = self.into(nc, nd)
             if n is broken_wire:
                 new_wire = Wire()
                 dirty_simnodes.update(
