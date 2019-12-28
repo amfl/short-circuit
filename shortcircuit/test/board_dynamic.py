@@ -271,6 +271,10 @@ class BridgeTest(unittest.TestCase):
         self._surround_bridge_with_wires()
         self.assertTrue(self.board.get((5, 2)).output())
 
+    def testBridgeWireDoesNotCross(self):
+        self._surround_bridge_with_wires()
+        self.assertIsNot(self.board.get((2, 2)), self.board.get((3, 1)))
+
     def testSimNodeIO(self):
         """WireBridges portal IO through the other side. Nothing should ever
         have the WireBridge itself as an input."""
