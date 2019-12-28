@@ -298,6 +298,22 @@ class BridgeTest(unittest.TestCase):
         self.assertEqual(nand.inputs, {wire})
 
 
+class BridgeDeleteTest(unittest.TestCase):
+    def setUp(self):
+        board_str = ("...o..\n"
+                     "-R-|--\n"
+                     "...-..\n")
+        self.board = Board.deserialize(board_str)
+        self.bridge_coords = (3, 1)
+        self.bridge = self.board.get(self.bridge_coords)
+
+    def testSwitchDeleteIO(self):
+        switch_coords = (3, 0)
+        self.board.set(switch_coords, None)
+        wire = self.board.get((3, 2))
+        self.assertEqual(wire.inputs, set())
+
+
 class PlaygroundTest(unittest.TestCase):
     """A big board to hold all the miscellaneous test cases"""
 
