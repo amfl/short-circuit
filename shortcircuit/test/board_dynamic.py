@@ -1,5 +1,6 @@
 import unittest
 
+import shortcircuit.util as util
 from shortcircuit.board import Board
 from shortcircuit.simnode import Nand, Wire
 
@@ -230,6 +231,34 @@ class ClockTest2(unittest.TestCase):
         for i in range(10):
             self.assertEqual(bool(i % 2), self.nand.output())
             self.board.tick()
+
+
+class BridgeTest(unittest.TestCase):
+    def setUp(self):
+        board_str = (".--l..\n"
+                     "......\n"
+                     "-r.|.-\n"
+                     "......\n")
+        self.board = Board.deserialize(board_str)
+        bridge_coords = (3, 2)
+        self.bridge = self.board.get(bridge_coords)
+
+        # Place wire around the bridge
+        new_wires = [util.add(bridge_coords, nc) for nc in util.neighbour_deltas()]
+        for w in new_wires:
+            self.board.set(w, Wire())
+
+        self.board.tick()
+
+    def testBridgeWireConnectsHorizontal(self):
+        self.assertIs(self.board.get((2, 2)), self.board.get((4, 2)))
+
+    def testBridgeWireConnectsVertical(self):
+        self.assertIs(self.board.get((3, 1)), self.board.get((3, 3)))
+
+    def testBridgeTransmits(self):
+        """Ensure signal crosses the bridge when it's supposed to"""
+        self.assertTrue(self.board.get((5, 2)).output())
 
 
 class PlaygroundTest(unittest.TestCase):
