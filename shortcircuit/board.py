@@ -92,7 +92,7 @@ class Board:
         if old_node is not None:
             # We need to delete the old node first!
             # Clear it out of our neighbour's inputs.
-            for n in self.neighbour_objs(coords):
+            for n in self.neighbour_objs_into(coords):
                 n.input_remove(old_node)
 
         # Perform any required wire joins/breaks
