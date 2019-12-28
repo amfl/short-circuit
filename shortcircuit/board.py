@@ -171,8 +171,14 @@ class Board:
         dirty_simnodes = {}
 
         # In the list of all wire neighbours which aren't the new wire...
-        for nc in util.neighbour_coords(old_wire_coords):
+        for nd in util.neighbour_deltas():
+            nc = util.add(old_wire_coords, nd)
             n = self.get(nc)
+            if n is None:
+                continue
+            # TODO new_wire might cause a problem here... Might need to be the
+            # old_wire....
+            board, nc, n = n.get(self, nc, nd, new_wire)
             if isinstance(n, Wire) and n != new_wire:
                 # Replace them, too!
                 dirty_simnodes.update(
@@ -231,9 +237,13 @@ class Board:
         #       neighbours as dirty.
         new_wires = set()
         dirty_simnodes = {}  # coord -> obj
-        for nc in util.neighbour_coords(coords):
+        for nd in util.neighbour_deltas():
+            nc = util.add(coords, nd)
             # Use coords to avoid mutating what we are iterating over
             n = self.get(nc)
+            if n is None:
+                continue
+            _, nc, n = n.get(self, nc, nd, n)
             if n is broken_wire:
                 new_wire = Wire()
                 dirty_simnodes.update(
