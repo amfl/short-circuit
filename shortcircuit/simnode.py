@@ -244,7 +244,7 @@ class Switch(SimNode):
         return self.signal
 
     def recalculate_io(self, my_coord, board):
-        neighbour_nodes = board.neighbour_objs(my_coord)
+        neighbour_nodes = board.neighbour_objs_into(my_coord)
         for output in neighbour_nodes:
             # Attempt to notify the output space (Not all nodes have inputs, or
             # there may be nothing there)

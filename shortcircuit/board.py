@@ -158,6 +158,16 @@ class Board:
         n_objs = [self.get(c) for c in util.neighbour_coords(coords)]
         return list(filter(None, n_objs))
 
+    def neighbour_objs_into(self, coords):
+        """Returns the neighbouring nodes through portals (No `None`s)"""
+        n_objs = []
+        for nd in util.neighbour_deltas():
+            nc = util.add(coords, nd)
+            _, nc, n = self.into(nc, nd)
+            if n is not None:
+                n_objs.append(n)
+        return n_objs
+
     #####################################################
     # Internal use methods
     #####################################################
