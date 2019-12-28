@@ -240,24 +240,29 @@ class BridgeTest(unittest.TestCase):
                      "-r.|.-\n"
                      "......\n")
         self.board = Board.deserialize(board_str)
-        bridge_coords = (3, 2)
-        self.bridge = self.board.get(bridge_coords)
+        self.bridge_coords = (3, 2)
+        self.bridge = self.board.get(self.bridge_coords)
 
+    def _surround_bridge_with_wires(self):
         # Place wire around the bridge
-        new_wires = [util.add(bridge_coords, nc) for nc in util.neighbour_deltas()]
+        new_wires = [util.add(self.bridge_coords, nc)
+                     for nc in util.neighbour_deltas()]
         for w in new_wires:
             self.board.set(w, Wire())
 
         self.board.tick()
 
     def testBridgeWireConnectsHorizontal(self):
+        self._surround_bridge_with_wires()
         self.assertIs(self.board.get((2, 2)), self.board.get((4, 2)))
 
     def testBridgeWireConnectsVertical(self):
+        self._surround_bridge_with_wires()
         self.assertIs(self.board.get((3, 1)), self.board.get((3, 3)))
 
-    def testBridgeTransmits(self):
+    def testBridgeWireTransmits(self):
         """Ensure signal crosses the bridge when it's supposed to"""
+        self._surround_bridge_with_wires()
         self.assertTrue(self.board.get((5, 2)).output())
 
 
