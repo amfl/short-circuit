@@ -57,7 +57,7 @@ class SimNode:
     def __repr__(self):
         return json.dumps(self.state_obj())
 
-    def get(self, q_board, my_coords, q_coord_delta, q_node):
+    def get(self, q_board, my_coords, q_coord_delta):
         """TODO how the hell do I explain this
 
         Parameters
@@ -69,8 +69,6 @@ class SimNode:
           The coords that the querying node perceives this node to have
         q_coord_delta : tuple
           The direction the querying node went to reach me
-        q_node : SimNode
-          The querying node
         """
         # h a v e   y o u   e v e r   s e e n   a   p o r t a l
         return (q_board, my_coords, self)
@@ -138,11 +136,11 @@ class WireBridge(SimNode):
     def serialize(self):
         return self.serialized_glyphs[0]
 
-    def get(self, q_board, my_coords, q_coord_delta, q_node):
+    def get(self, q_board, my_coords, q_coord_delta):
         new_coords = util.add(my_coords, q_coord_delta)
         new_node = q_board.get(new_coords)
         try:
-            return new_node.get(q_board, new_coords, q_coord_delta, self)
+            return new_node.get(q_board, new_coords, q_coord_delta)
         except AttributeError:
             return (q_board, my_coords, None)
 

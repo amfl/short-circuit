@@ -178,7 +178,7 @@ class Board:
                 continue
             # TODO new_wire might cause a problem here... Might need to be the
             # old_wire....
-            board, nc, n = n.get(self, nc, nd, new_wire)
+            board, nc, n = n.get(self, nc, nd)
             if isinstance(n, Wire) and n != new_wire:
                 # Replace them, too!
                 dirty_simnodes.update(
@@ -243,7 +243,7 @@ class Board:
             n = self.get(nc)
             if n is None:
                 continue
-            _, nc, n = n.get(self, nc, nd, n)
+            _, nc, n = n.get(self, nc, nd)
             if n is broken_wire:
                 new_wire = Wire()
                 dirty_simnodes.update(
