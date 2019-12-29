@@ -1,7 +1,7 @@
 import logging
 
 import shortcircuit.util as util
-from shortcircuit.simnode import SimNode, Wire, Nand, Switch
+from shortcircuit.simnode import SimNode, Wire, WireBridge, Nand, Switch
 
 logger = logging.getLogger()
 
@@ -61,6 +61,27 @@ class Board:
         except IndexError:
             return None
 
+    def into(self, coords, delta):
+        """Similar to `get`, but "enters into" the SimNode if possible (Crosses
+        bridges, enters portals...)
+
+        Parameters
+        ----------
+
+        coords : tuple
+          The coords that the querying node perceives this node to have
+        delta : tuple
+          The direction the querying node went to reach me
+
+        Returns : tuple
+          (new_board, new_coords, SimNode)
+        """
+        n = self.get(coords)
+        if n is None:
+            return (self, coords, None)
+        else:
+            return n.get(self, coords, delta)
+
     def set(self, coords, node: SimNode):
         """Places a SimNode on the board. This also performs any wire joining
         and IO updates."""
@@ -71,7 +92,7 @@ class Board:
         if old_node is not None:
             # We need to delete the old node first!
             # Clear it out of our neighbour's inputs.
-            for n in self.neighbour_objs(coords):
+            for n in self.neighbour_objs_into(coords):
                 n.input_remove(old_node)
 
         # Perform any required wire joins/breaks
@@ -92,7 +113,7 @@ class Board:
 
     @staticmethod
     def deserialize_simnode(glyph):
-        for cls in [Wire, Nand, Switch]:
+        for cls in [Wire, WireBridge, Nand, Switch]:
             try:
                 return cls.deserialize(glyph)
             except:
@@ -137,6 +158,16 @@ class Board:
         n_objs = [self.get(c) for c in util.neighbour_coords(coords)]
         return list(filter(None, n_objs))
 
+    def neighbour_objs_into(self, coords):
+        """Returns the neighbouring nodes through portals (No `None`s)"""
+        n_objs = []
+        for nd in util.neighbour_deltas():
+            nc = util.add(coords, nd)
+            _, nc, n = self.into(nc, nd)
+            if n is not None:
+                n_objs.append(n)
+        return n_objs
+
     #####################################################
     # Internal use methods
     #####################################################
@@ -171,8 +202,9 @@ class Board:
         dirty_simnodes = {}
 
         # In the list of all wire neighbours which aren't the new wire...
-        for nc in util.neighbour_coords(old_wire_coords):
-            n = self.get(nc)
+        for nd in util.neighbour_deltas():
+            nc = util.add(old_wire_coords, nd)
+            _, nc, n = self.into(nc, nd)
             if isinstance(n, Wire) and n != new_wire:
                 # Replace them, too!
                 dirty_simnodes.update(
@@ -231,9 +263,10 @@ class Board:
         #       neighbours as dirty.
         new_wires = set()
         dirty_simnodes = {}  # coord -> obj
-        for nc in util.neighbour_coords(coords):
+        for nd in util.neighbour_deltas():
+            nc = util.add(coords, nd)
             # Use coords to avoid mutating what we are iterating over
-            n = self.get(nc)
+            _, nc, n = self.into(nc, nd)
             if n is broken_wire:
                 new_wire = Wire()
                 dirty_simnodes.update(
@@ -284,8 +317,17 @@ class Board:
                 if not isinstance(tile, Wire):
                     continue
 
-                left = tile_lookup.get((x-1, y))
-                top = tile_lookup.get((x, y-1))
+                # Typically we only look directly above/left of the current
+                # tile, but wire bridges throw a spanner in the works, so we
+                # will need to traverse them
+                dx = x - 1
+                dy = y - 1
+                while isinstance(self.get((dx, y)), WireBridge):
+                    dx -= 1
+                while isinstance(self.get((x, dy)), WireBridge):
+                    dy -= 1
+                left = tile_lookup.get((dx, y))
+                top = tile_lookup.get((x, dy))
 
                 neighbouring_labels = [x for x in [left, top] if x is not None]
                 try:

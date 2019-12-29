@@ -57,6 +57,28 @@ class SimNode:
     def __repr__(self):
         return json.dumps(self.state_obj())
 
+    def get(self, q_board, my_coords, q_coord_delta):
+        """Get the node and frame of reference (board/coord combo) which this
+        node wants to present to the queryer, when approached at
+        `q_coord_delta`. For most nodes, the frame of reference does not
+        change, and the returned node is `self`. However, some special nodes
+        act as portals and will defer to other nodes when attempts are made to
+        access them. WireBridges are such a node - Attempting to read it from
+        the side will result in returning whatever lies on the opposite side.
+
+        Parameters
+        ----------
+
+        q_board : Board
+          The board that the querying node is from
+        my_coords : tuple
+          The coords that the querying node perceives this node to have
+        q_coord_delta : tuple
+          The direction the querying node went to reach me
+        """
+        # h a v e   y o u   e v e r   s e e n   a   p o r t a l
+        return (q_board, my_coords, self)
+
 
 class Wire(SimNode):
     serialized_glyphs = ['-']
@@ -104,6 +126,31 @@ class Wire(SimNode):
         self.inputs.add(node)
 
 
+class WireBridge(SimNode):
+    serialized_glyphs = ['|']
+
+    def output(self):
+        # A bridge should never be asked for output by another node, because
+        # nothing will ever connect to it. It may be asked by a UI.
+        return False
+
+    @classmethod
+    def deserialize(cls, glyph):
+        assert(glyph in cls.serialized_glyphs)
+        return cls()
+
+    def serialize(self):
+        return self.serialized_glyphs[0]
+
+    def get(self, q_board, my_coords, q_coord_delta):
+        new_coords = util.add(my_coords, q_coord_delta)
+        new_node = q_board.get(new_coords)
+        try:
+            return new_node.get(q_board, new_coords, q_coord_delta)
+        except AttributeError:
+            return (q_board, my_coords, None)
+
+
 class Nand(SimNode):
     serialized_glyphs = ['u', 'r', 'd', 'l']
 
@@ -124,7 +171,7 @@ class Nand(SimNode):
 
         for i, delta in enumerate(deltas):
             nc = util.add(delta, my_coord)
-            n = board.get(nc)
+            _, nc, n = board.into(nc, delta)
 
             if n is not None:
                 if i == self.facing:
@@ -203,7 +250,7 @@ class Switch(SimNode):
         return self.signal
 
     def recalculate_io(self, my_coord, board):
-        neighbour_nodes = board.neighbour_objs(my_coord)
+        neighbour_nodes = board.neighbour_objs_into(my_coord)
         for output in neighbour_nodes:
             # Attempt to notify the output space (Not all nodes have inputs, or
             # there may be nothing there)
