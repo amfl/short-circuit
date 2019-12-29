@@ -2,7 +2,7 @@ import logging
 import unittest
 
 from shortcircuit.board import Board
-from shortcircuit.simnode import Switch, Nand, Wire
+from shortcircuit.simnode import Switch, Nand, Wire, WireBridge
 
 logger = logging.getLogger()
 
@@ -238,6 +238,9 @@ class BridgeTest(unittest.TestCase):
         self.board.tick()
         self.board.tick()
         self.board.tick()
+
+    def testBridgeDeserialize(self):
+        self.assertIsInstance(self.bridge, WireBridge)
 
     def testBridgeTransmits(self):
         """Ensure signal crosses the bridge when it's supposed to"""

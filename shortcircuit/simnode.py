@@ -104,6 +104,23 @@ class Wire(SimNode):
         self.inputs.add(node)
 
 
+class WireBridge(SimNode):
+    serialized_glyphs = ['|']
+
+    def output(self):
+        # A bridge should never be asked for output by another node, because
+        # nothing will ever connect to it. It may be asked by a UI.
+        return False
+
+    @classmethod
+    def deserialize(cls, glyph):
+        assert(glyph in cls.serialized_glyphs)
+        return cls()
+
+    def serialize(self):
+        return self.serialized_glyphs[0]
+
+
 class Nand(SimNode):
     serialized_glyphs = ['u', 'r', 'd', 'l']
 
