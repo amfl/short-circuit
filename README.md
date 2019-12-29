@@ -43,6 +43,7 @@ python ./shortcircuit/main.py --file data/full-adder.ssboard
 
 ## Goals
 
+- Give myself a fun project to work on
 - Provide users with:
   - The bare minimum required components to be Turing complete
   - A graphical, tile-based editor which can be used to design a system without
