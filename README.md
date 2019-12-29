@@ -10,6 +10,35 @@ Short Circuit is a **tile-based digital logic sandbox** inspired by
 
 It is in **pre-alpha**. Expect nothing to work!
 
+## Quickstart
+
+To load the demo [full adder file][full-adder]:
+
+```bash
+./docker-build.sh
+./docker-run.sh
+
+# View the help
+python ./shortcircuit/main.py --help
+
+# Load the demo - Press "o" over switches to toggle
+#                 Press "." to advance the simulation
+python ./shortcircuit/main.py --file data/full-adder.ssboard
+```
+
+**Controls**
+
+- **arrow keys** or **h j k l** : Cursor movement
+- **o** : Place/toggle switches
+- **n** : Place/rotate NANDs
+- **space** : Place wire/delete node
+- **b** : Place a wire bridge
+- **.** : Tick the simulation
+- **w** : Write out current layout to disk
+- **q** : Quit
+
+[full-adder]: ./data/full-adder.ssboard
+
 ## Goals
 
 - Provide users with:
