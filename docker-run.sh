@@ -14,9 +14,6 @@ evil_git_dirty() {
 }
 REVISION=$(evil_git_dirty)$(git log HEAD~.. --oneline)
 
-# Make sure the output dir exists, otherwise docker will try to create it as root
-mkdir -p "$DATADIR"
-
 # Run a new container as your current user so log files are created with sensible permissions
 docker run --rm -it \
     -u "$(id -u):$(id -g)" \
