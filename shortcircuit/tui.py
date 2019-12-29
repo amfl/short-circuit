@@ -135,6 +135,10 @@ class TermUI:
                 return {'tile_set': {'coord': self.cursor_pos,
                                      'index': 0,
                                      'node': 'o'}}
+        elif inp == 'b':  # WireBridge
+            return {'tile_set': {'coord': self.cursor_pos,
+                                 'index': 0,
+                                 'node': '|'}}
 
         elif inp == 'x':  # Examine tile under cursor
             logger.info(repr(self._obj_under_cursor()))
