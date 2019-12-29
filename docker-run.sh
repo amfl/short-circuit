@@ -1,8 +1,9 @@
 #!/bin/sh
-# Mounts a fresh copy of the source code and starts an ephemeral container.
-# Logs are captured so you can review them at your leisure.
+# Mounts a copy of the source code and starts an ephemeral container.
+# Logs are captured and produced into the data dir so you can
+# review them at your leisure.
 
-OUTDIR="$(pwd)/output"
+DATADIR="$(pwd)/data"
 
 
 
@@ -14,12 +15,12 @@ evil_git_dirty() {
 REVISION=$(evil_git_dirty)$(git log HEAD~.. --oneline)
 
 # Make sure the output dir exists, otherwise docker will try to create it as root
-mkdir -p "$OUTDIR"
+mkdir -p "$DATADIR"
 
 # Run a new container as your current user so log files are created with sensible permissions
 docker run --rm -it \
     -u "$(id -u):$(id -g)" \
-    -v "${OUTDIR}:/proj/output" \
+    -v "${DATADIR}:/proj/data" \
     -v "$(pwd)/shortcircuit:/proj/shortcircuit:ro" \
     -e "TERM=${TERM}" \
     -e "REVISION=${REVISION}" \

@@ -150,7 +150,7 @@ class TermUI:
         elif inp == 'w':
             filename = datetime.now().strftime('%Y-%m-%dT%H-%M-%S')
             return {'write_board': {'index': 0,
-                                    'filepath': f'output/{filename}.ssboard'}}
+                                    'filepath': f'data/{filename}.ssboard'}}
 
         else:
             return None

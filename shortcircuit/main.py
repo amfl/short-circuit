@@ -6,7 +6,7 @@ from shortcircuit.tui import TermUI
 from shortcircuit.world import World
 
 logger = logging.getLogger()
-logname = 'output/gameplay.log'
+logname = 'data/gameplay.log'
 logging.basicConfig(filename=logname,
                     filemode='a',
                     format=('%(asctime)s,%(msecs)d %(module)s '
