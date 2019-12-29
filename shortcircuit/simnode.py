@@ -58,7 +58,13 @@ class SimNode:
         return json.dumps(self.state_obj())
 
     def get(self, q_board, my_coords, q_coord_delta):
-        """TODO how the hell do I explain this
+        """Get the node and frame of reference (board/coord combo) which this
+        node wants to present to the queryer, when approached at
+        `q_coord_delta`. For most nodes, the frame of reference does not
+        change, and the returned node is `self`. However, some special nodes
+        act as portals and will defer to other nodes when attempts are made to
+        access them. WireBridges are such a node - Attempting to read it from
+        the side will result in returning whatever lies on the opposite side.
 
         Parameters
         ----------
