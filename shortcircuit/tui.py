@@ -6,7 +6,7 @@ from blessed import Terminal
 from blessed.keyboard import Keystroke
 
 import shortcircuit.util as util
-from shortcircuit.simnode import Nand, Wire, Switch
+from shortcircuit.simnode import Nand, Wire, WireBridge, Switch
 
 logger = logging.getLogger()
 
@@ -50,6 +50,10 @@ class TermUI:
                      4 * connecting_neighbour[0] +
                      8 * connecting_neighbour[2])
             return wire_glyphs[index]
+        elif isinstance(node, WireBridge):
+            # Other possibilities:
+            # ['┇', '╏']
+            return '┋'
         else:
             return node.serialize()
 
