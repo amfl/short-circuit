@@ -10,6 +10,8 @@ Short Circuit is a **tile-based digital logic sandbox** inspired by
 
 It is in **pre-alpha**. Expect nothing to work!
 
+![Full Adder](./docs/full-adder.png)
+
 ## Quickstart
 
 To load the demo [full adder file][full-adder]:
