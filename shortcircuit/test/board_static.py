@@ -195,7 +195,7 @@ class DirectSimNodeOutputClockTest(unittest.TestCase):
                 ]
         # Keep track of the leftmost nand on both grids.
         # They should both always have the same value.
-        self.nands = list(map(lambda x: x.get((0, 1)), self.boards))
+        self.nands = [b.get((0, 1)) for b in self.boards]
 
     def testOutputToSimNodes(self):
         """
