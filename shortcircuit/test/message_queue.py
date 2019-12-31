@@ -30,7 +30,7 @@ class TestMessageQueue(unittest.TestCase):
         self.assertEqual(self.board.get(coord).serialize(), 'd')
 
     def testTick(self):
-        self.world.submit({'tick': True})
+        self.world.submit({'tick': 1})
         self.world.process_queue()
         nand = self.board.get((0, 0))
         self.assertTrue(nand.output())

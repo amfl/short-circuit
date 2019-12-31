@@ -58,5 +58,6 @@ class World:
             switch.toggle(value)
 
         elif tick:
-            for board in self.boards:
-                board.tick()
+            for i in range(tick):
+                for board in self.boards:
+                    board.tick()

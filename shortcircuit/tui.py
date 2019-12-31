@@ -113,7 +113,7 @@ class TermUI:
         elif inp == 'q':
             return {'quit': True}
         elif inp == '.':
-            return {'tick': True}
+            return {'tick': 1}
         elif inp == ' ':  # Wire / delete
             node = '-' if self._obj_under_cursor() is None else '.'
             return {'tile_set': {'coord': self.cursor_pos,
