@@ -1,3 +1,4 @@
+import copy
 import logging
 
 import shortcircuit.util as util
@@ -103,6 +104,28 @@ class Board:
 
         # Make sure all neighbours have their connections updated
         self._grid_local_io_refresh(coords)
+
+    def copy(self, coords_from, dims, coords_to):
+        """Copies an area of the board to somewhere else on the board.
+
+        Parameters
+        ----------
+
+        coords_from : tuple
+          The coords of the top left of the source area
+        dims : tuple
+          The width and height of the area to copy
+        coords_to : tuple
+          The coords of the top left of the destination area
+        """
+        for x in range(dims[0]):
+            for y in range(dims[1]):
+                src = (coords_from[0] + x,
+                       coords_from[1] + y)
+                dest = (coords_to[0] + x,
+                        coords_to[1] + y)
+                node = copy.deepcopy(self.get(src))
+                self.set(dest, node)
 
     def set_basic(self, coords, node: SimNode):
         # Update the contents of the board with the new object
