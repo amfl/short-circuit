@@ -36,6 +36,7 @@ python ./shortcircuit/main.py --file data/full-adder.ssboard
 - **space** : Place wire/delete node
 - **b** : Place a wire bridge
 - **.** : Tick the simulation
+- **v** : Enter visual select mode
 - **w** : Write out current layout to disk
 - **q** : Quit
 

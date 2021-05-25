@@ -18,6 +18,9 @@ class TermUI:
         self.world = world
         self.cursor_pos = (0, 0)
 
+        # Start coords of visual mode
+        self.visual_start = None
+
     def start(self):
         """Start the UI and block until the UI is closed."""
 
@@ -78,9 +81,22 @@ class TermUI:
                         glyph = self._get_fancy_glyph(board, coords, node)
                     else:
                         glyph = node.serialize()
+
+                    # Color the node depending on its output signal
                     glyph = self.t.color(colors[node.output()])(glyph)
                 except AttributeError:
                     glyph = '.'
+
+                # Add background color if we're in visual mode
+                if self.visual_start is not None:
+                    min_coord = (min(self.cursor_pos[0], self.visual_start[0]),
+                                 min(self.cursor_pos[1], self.visual_start[1]))
+                    max_coord = (max(self.cursor_pos[0], self.visual_start[0]),
+                                 max(self.cursor_pos[1], self.visual_start[1]))
+                    if y >= min_coord[1] and y <= max_coord[1]:
+                        if x >= min_coord[0] and x <= max_coord[0]:
+                            glyph = self.t.on_yellow(glyph)
+
                 print(glyph, end='')
             print('')
 
@@ -112,6 +128,8 @@ class TermUI:
             return {'move': (1, 0)}
         elif inp == 'q':
             return {'quit': True}
+        elif inp == 'v':
+            return {'visual': {'coord': self.cursor_pos}}
         elif inp == '.':
             return {'tick': 1}
         elif inp == ' ':  # Wire / delete
@@ -171,6 +189,7 @@ class TermUI:
             move_delta = ui_event.get('move')
             quit = ui_event.get('quit')
             write_board = ui_event.get('write_board')
+            visual_mode = ui_event.get('visual')
 
             if move_delta:
                 new_pos = util.add(self.cursor_pos, move_delta)
@@ -182,6 +201,11 @@ class TermUI:
                 index = write_board['index']
                 self.write_board_to_disk(self.world.boards[index],
                                          write_board['filepath'])
+            elif visual_mode:
+                if self.visual_start:
+                    self.visual_start = None
+                else:
+                    self.visual_start = visual_mode['coord']
 
             else:
                 # Pass it along to the world message queue
