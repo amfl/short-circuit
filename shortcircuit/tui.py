@@ -135,7 +135,10 @@ class TermUI:
         elif inp == 'y' and self.visual_mode:
             return {'yank': {'coord': self.cursor_pos}}
         elif inp == 'p':
-            return {'paste': {'coord': self.cursor_pos}}
+            return {'copy': {
+                        'from': self.visual_start,
+                        'dims': self.visual_dims,
+                        'to': self.cursor_pos}}
         elif inp == '.':
             return {'tick': 1}
         elif inp == ' ':  # Wire / delete
@@ -192,12 +195,12 @@ class TermUI:
             if ui_event is None:
                 continue
 
+            # Check whether this event is for controlling the UI itself
             move_delta = ui_event.get('move')
             quit = ui_event.get('quit')
             write_board = ui_event.get('write_board')
             visual_mode = ui_event.get('visual')
             yank = ui_event.get('yank')
-            paste = ui_event.get('paste')
 
             if move_delta:
                 new_pos = util.add(self.cursor_pos, move_delta)
@@ -214,6 +217,8 @@ class TermUI:
                     self.visual_start = visual_mode['coord']
                 self.visual_mode = not self.visual_mode
             elif yank:
+                # Yanking just stores state for a later 'copy' command.
+
                 # Figure out the top left and bottom right coords of selection
                 min_coord = (min(yank['coord'][0], self.visual_start[0]),
                              min(yank['coord'][1], self.visual_start[1]))
@@ -225,17 +230,9 @@ class TermUI:
                 self.visual_start = min_coord
                 # Exit visual mode
                 self.visual_mode = False
-            elif paste:
-                self.world.submit({
-                    'copy': {
-                        'from': self.visual_start,
-                        'dims': self.visual_dims,
-                        'to': paste['coord'],
-                    }
-                })
-                self.world.process_queue()
 
             else:
+                # Event is not for controlling the UI.
                 # Pass it along to the world message queue
                 self.world.submit(ui_event)
                 self.world.process_queue()
