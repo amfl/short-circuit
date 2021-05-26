@@ -109,3 +109,10 @@ Because the source directory is mounted, it's possible to quickly hack on
 source without having to rebuild everything.
 
 [venv]: https://docs.python.org/3/library/venv.html
+
+## Further Reading
+
+If you like this project, you'll probably like these things too.
+
+- [Logisim-evolution](https://github.com/reds-heig/logisim-evolution) - An educational tool for designing and simulating digital logic circuits
+- [AsciiDots](https://github.com/aaronjanse/asciidots) - An esoteric programming language based on ascii art
