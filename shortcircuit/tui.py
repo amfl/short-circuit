@@ -18,8 +18,10 @@ class TermUI:
         self.world = world
         self.cursor_pos = (0, 0)
 
-        # Start coords of visual mode
-        self.visual_start = None
+        # Visual mode
+        self.visual_mode = False    # Enabled
+        self.visual_start = (0, 0)  # Top-left of visual selection
+        self.visual_dims = (0, 0)   # Dimensions of visual selection
 
     def start(self):
         """Start the UI and block until the UI is closed."""
@@ -88,7 +90,7 @@ class TermUI:
                     glyph = '.'
 
                 # Add background color if we're in visual mode
-                if self.visual_start is not None:
+                if self.visual_mode:
                     min_coord = (min(self.cursor_pos[0], self.visual_start[0]),
                                  min(self.cursor_pos[1], self.visual_start[1]))
                     max_coord = (max(self.cursor_pos[0], self.visual_start[0]),
@@ -130,6 +132,10 @@ class TermUI:
             return {'quit': True}
         elif inp == 'v':
             return {'visual': {'coord': self.cursor_pos}}
+        elif inp == 'y' and self.visual_mode:
+            return {'yank': {'coord': self.cursor_pos}}
+        elif inp == 'p':
+            return {'paste': {'coord': self.cursor_pos}}
         elif inp == '.':
             return {'tick': 1}
         elif inp == ' ':  # Wire / delete
@@ -190,6 +196,8 @@ class TermUI:
             quit = ui_event.get('quit')
             write_board = ui_event.get('write_board')
             visual_mode = ui_event.get('visual')
+            yank = ui_event.get('yank')
+            paste = ui_event.get('paste')
 
             if move_delta:
                 new_pos = util.add(self.cursor_pos, move_delta)
@@ -202,10 +210,30 @@ class TermUI:
                 self.write_board_to_disk(self.world.boards[index],
                                          write_board['filepath'])
             elif visual_mode:
-                if self.visual_start:
-                    self.visual_start = None
-                else:
+                if not self.visual_mode:
                     self.visual_start = visual_mode['coord']
+                self.visual_mode = not self.visual_mode
+            elif yank:
+                # Figure out the top left and bottom right coords of selection
+                min_coord = (min(yank['coord'][0], self.visual_start[0]),
+                             min(yank['coord'][1], self.visual_start[1]))
+                max_coord = (max(yank['coord'][0], self.visual_start[0]),
+                             max(yank['coord'][1], self.visual_start[1]))
+                # Store coords in a consistent way so dims aren't backwards
+                self.visual_dims = (max_coord[0] - min_coord[0] + 1,
+                                    max_coord[1] - min_coord[1] + 1)
+                self.visual_start = min_coord
+                # Exit visual mode
+                self.visual_mode = False
+            elif paste:
+                self.world.submit({
+                    'copy': {
+                        'from': self.visual_start,
+                        'dims': self.visual_dims,
+                        'to': paste['coord'],
+                    }
+                })
+                self.world.process_queue()
 
             else:
                 # Pass it along to the world message queue

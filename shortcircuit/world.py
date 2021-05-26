@@ -30,6 +30,7 @@ class World:
         nand_rotate = message.get('nand_rotate')
         tick = message.get('tick')
         switch_toggle = message.get('switch_toggle')
+        copy = message.get('copy')
 
         if tile_set:
             node = Board.deserialize_simnode(tile_set['node'])
@@ -61,3 +62,8 @@ class World:
             for i in range(tick):
                 for board in self.boards:
                     board.tick()
+
+        elif copy:
+            self.boards[0].copy(copy['from'],
+                                copy['dims'],
+                                copy['to'])

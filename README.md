@@ -37,6 +37,8 @@ python ./shortcircuit/main.py --file data/full-adder.ssboard
 - **b** : Place a wire bridge
 - **.** : Tick the simulation
 - **v** : Enter visual select mode
+- **y** : Yank selected area
+- **p** : Paste yanked area
 - **w** : Write out current layout to disk
 - **q** : Quit
 
