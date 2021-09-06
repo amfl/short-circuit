@@ -265,3 +265,16 @@ class Switch(SimNode):
             self.signal = not self.signal
         else:
             self.signal = value
+
+
+class Portal(SimNode):
+    def __init__(self):
+        # Portals belong to zero or one portal groups, which are addressed with
+        # a single integer.
+        # Portals belonging to the same group act like the same piece of wire.
+        self.portal_group = None
+
+    @classmethod
+    def deserialize(cls, glyph):
+        assert(glyph == 'P')
+        return cls()

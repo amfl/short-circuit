@@ -2,7 +2,7 @@ import copy
 import logging
 
 import shortcircuit.util as util
-from shortcircuit.simnode import SimNode, Wire, WireBridge, Nand, Switch
+from shortcircuit.simnode import SimNode, Wire, WireBridge, Nand, Switch, Portal
 
 logger = logging.getLogger()
 
@@ -136,7 +136,7 @@ class Board:
 
     @staticmethod
     def deserialize_simnode(glyph):
-        for cls in [Wire, WireBridge, Nand, Switch]:
+        for cls in [Wire, WireBridge, Nand, Switch, Portal]:
             try:
                 return cls.deserialize(glyph)
             except:
