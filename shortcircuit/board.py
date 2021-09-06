@@ -35,7 +35,7 @@ class Board:
         """Ticks the sim. Could work in parallel. Only touches the
         graph_cache."""
         wires, nodes = self._get_caches()
-        logger.info(f'TICKING THE SIM')
+        logger.info('TICKING THE SIM')
         logger.debug(f'wires: {wires} nodes: {nodes}')
 
         for (_, _, node) in nodes:
