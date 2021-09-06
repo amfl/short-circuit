@@ -101,7 +101,7 @@ convenience scripts in the repo to help get set up quickly.
 3. Start a `tail -F ./output/gameplay.log` in another terminal to view logs
 4. Hack on the source in your editor
 5. Run the linter in the container with `flake8 ./shortcircuit`
-6. Run the tests in the container with `pytest ./shortcircuit/tests/*`
+6. Run the tests in the container with `pytest ./shortcircuit/test/*`
 7. Run the code in the container with `python ./shortcircuit/main.py`
 8. GOTO 4
 
