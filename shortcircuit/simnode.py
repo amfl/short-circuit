@@ -268,6 +268,8 @@ class Switch(SimNode):
 
 
 class Portal(SimNode):
+    internal_wires = {}
+
     def __init__(self):
         # Portals belong to zero or one portal groups, which are addressed with
         # a single integer.
@@ -278,3 +280,25 @@ class Portal(SimNode):
     def deserialize(cls, glyph):
         assert(glyph == 'P')
         return cls()
+
+    def serialize(self):
+        return self.serialized_glyphs[0]
+
+    def set_portal_group(self, index):
+        self.portal_group = index
+        if not index in internal_wires:
+            internal_wires[index] = Wire()
+
+    def output(self):
+        # A Portal should never be asked for output by another node, because
+        # nothing will ever connect to it. It may be asked by a UI.
+        return False
+
+    # Thoughts: Do I want to have a neighbors function which is part of the
+    # SimNode class? Or is this what `get` does?
+    # `get` seems flawed because it doesn't give enough control on topology.
+    # I think that it would be more intuitive to let nodes dictate their
+    # neighbors.
+
+    def get(self, q_board, my_coords, q_coord_delta):
+        return (q_board, my_coords, internal_wires[self.portal_group])
